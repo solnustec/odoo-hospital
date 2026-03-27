@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Module category -->
+    <record id="module_category_chatbot" model="ir.module.category">
+        <field name="name">Hospital Chatbot</field>
+        <field name="description">Gestión de chatbot hospitalario</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- User group -->
+    <record id="group_chatbot_user" model="res.groups">
+        <field name="name">Usuario</field>
+        <field name="category_id" ref="module_category_chatbot"/>
+    </record>
+
+    <!-- Manager group -->
+    <record id="group_chatbot_manager" model="res.groups">
+        <field name="name">Administrador</field>
+        <field name="category_id" ref="module_category_chatbot"/>
+        <field name="implied_ids" eval="[(4, ref('group_chatbot_user'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Session Form View -->
+    <record id="hospital_chatbot_session_view_form" model="ir.ui.view">
+        <field name="name">hospital.chatbot.session.form</field>
+        <field name="model">hospital.chatbot.session</field>
+        <field name="arch" type="xml">
+            <form string="Sesión" create="0">
+                <header>
+                    <button name="reset" type="object" string="Reiniciar sesión"
+                            class="btn-primary"
+                            confirm="¿Reiniciar esta sesión? Se perderá el contexto actual."
+                            invisible="not is_active"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Transferido" bg_color="text-bg-warning"
+                            invisible="not transferred_to_agent"/>
+                    <widget name="web_ribbon" title="Inactiva" bg_color="text-bg-danger"
+                            invisible="is_active"/>
+                    <group>
+                        <group>
+                            <field name="chatbot_id" readonly="1"/>
+                            <field name="phone_number" readonly="1"/>
+                            <field name="is_active" readonly="1"/>
+                            <field name="transferred_to_agent"/>
+                        </group>
+                        <group>
+                            <field name="started_at" readonly="1"/>
+                            <field name="last_activity" readonly="1"/>
+                            <field name="current_flow_id" readonly="1"/>
+                            <field name="current_node_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Contexto" name="context">
+                        <field name="context" widget="json" readonly="1" nolabel="1"
+                               colspan="2"/>
+                    </group>
+                    <group string="Notas del agente" name="agent_notes"
+                           invisible="not transferred_to_agent">
+                        <field name="agent_notes" nolabel="1" colspan="2"/>
+                    </group>
+                    <notebook>
+                        <page string="Mensajes" name="messages">
+                            <field name="message_ids" readonly="1">
+                                <tree>
+                                    <field name="timestamp"/>
+                                    <field name="direction"
+                                           decoration-success="direction == 'INBOUND'"
+                                           decoration-info="direction == 'OUTBOUND'"/>
+                                    <field name="message_type"/>
+                                    <field name="content"/>
+                                    <field name="node_id" optional="show"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Session Tree View -->
+    <record id="hospital_chatbot_session_view_tree" model="ir.ui.view">
+        <field name="name">hospital.chatbot.session.tree</field>
+        <field name="model">hospital.chatbot.session</field>
+        <field name="arch" type="xml">
+            <tree string="Sesiones" create="0"
+                  decoration-muted="not is_active"
+                  decoration-warning="transferred_to_agent">
+                <field name="phone_number"/>
+                <field name="chatbot_id"/>
+                <field name="is_active" widget="boolean_toggle" readonly="1"/>
+                <field name="transferred_to_agent"/>
+                <field name="current_flow_id" optional="show"/>
+                <field name="current_node_id" optional="show"/>
+                <field name="last_activity"/>
+                <field name="message_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Session Search View -->
+    <record id="hospital_chatbot_session_view_search" model="ir.ui.view">
+        <field name="name">hospital.chatbot.session.search</field>
+        <field name="model">hospital.chatbot.session</field>
+        <field name="arch" type="xml">
+            <search string="Sesiones">
+                <field name="phone_number"/>
+                <field name="chatbot_id"/>
+                <filter name="active" string="Activas" domain="[('is_active', '=', True)]"/>
+                <filter name="transferred" string="Transferidas"
+                        domain="[('transferred_to_agent', '=', True)]"/>
+                <separator/>
+                <filter name="today" string="Hoy"
+                        domain="[('last_activity', '>=', (context_today()).strftime('%%Y-%%m-%%d'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="chatbot_id" string="Chatbot"
+                            context="{'group_by': 'chatbot_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Session Action -->
+    <record id="action_chatbot_session" model="ir.actions.act_window">
+        <field name="name">Sesiones</field>
+        <field name="res_model">hospital.chatbot.session</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay sesiones de conversación activas.
+            </p>
+        </field>
+    </record>
+
+    <!-- Message Tree View -->
+    <record id="hospital_chatbot_message_view_tree" model="ir.ui.view">
+        <field name="name">hospital.chatbot.message.tree</field>
+        <field name="model">hospital.chatbot.message</field>
+        <field name="arch" type="xml">
+            <tree string="Mensajes" create="0">
+                <field name="timestamp"/>
+                <field name="session_id"/>
+                <field name="direction"
+                       decoration-success="direction == 'INBOUND'"
+                       decoration-info="direction == 'OUTBOUND'"/>
+                <field name="message_type"/>
+                <field name="content"/>
+                <field name="node_id" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Message Action -->
+    <record id="action_chatbot_message" model="ir.actions.act_window">
+        <field name="name">Mensajes</field>
+        <field name="res_model">hospital.chatbot.message</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <!-- Menu items -->
+    <menuitem id="chatbot_menu_sessions"
+              name="Sesiones"
+              parent="chatbot_menu_conversations"
+              action="action_chatbot_session"
+              sequence="10"/>
+
+    <menuitem id="chatbot_menu_messages"
+              name="Mensajes"
+              parent="chatbot_menu_conversations"
+              action="action_chatbot_message"
+              sequence="20"/>
+</odoo>

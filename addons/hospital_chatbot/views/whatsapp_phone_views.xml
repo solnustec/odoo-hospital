@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- WhatsApp Phone Form View -->
+    <record id="hospital_chatbot_whatsapp_phone_view_form" model="ir.ui.view">
+        <field name="name">hospital.chatbot.whatsapp.phone.form</field>
+        <field name="model">hospital.chatbot.whatsapp.phone</field>
+        <field name="arch" type="xml">
+            <form string="Teléfono WhatsApp">
+                <header>
+                    <button name="action_get_qr" type="object"
+                            string="Obtener QR" class="btn-primary"
+                            icon="fa-qrcode"
+                            invisible="session_status == 'connected'"/>
+                    <button name="action_check_status" type="object"
+                            string="Verificar estado" class="btn-info"
+                            icon="fa-refresh"/>
+                    <button name="action_disconnect_session" type="object"
+                            string="Desconectar" class="btn-warning"
+                            icon="fa-power-off"
+                            invisible="session_status != 'connected'"
+                            confirm="¿Desconectar esta sesión de WhatsApp?"/>
+                    <field name="session_status" widget="statusbar"
+                           statusbar_visible="no_session,disconnected,connected"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="phone_number"/>
+                            <field name="chatbot_id"/>
+                            <field name="is_active" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="session_status" readonly="1"/>
+                            <field name="whatsapp_id" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- WhatsApp Phone Tree View -->
+    <record id="hospital_chatbot_whatsapp_phone_view_tree" model="ir.ui.view">
+        <field name="name">hospital.chatbot.whatsapp.phone.tree</field>
+        <field name="model">hospital.chatbot.whatsapp.phone</field>
+        <field name="arch" type="xml">
+            <tree string="Teléfonos WhatsApp"
+                  decoration-success="session_status == 'connected'"
+                  decoration-danger="session_status == 'disconnected'"
+                  decoration-muted="session_status == 'no_session'">
+                <field name="phone_number"/>
+                <field name="chatbot_id"/>
+                <field name="is_active" widget="boolean_toggle"/>
+                <field name="session_status"
+                       decoration-success="session_status == 'connected'"
+                       decoration-danger="session_status == 'disconnected'"
+                       widget="badge"/>
+                <field name="whatsapp_id" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <button name="action_check_status" type="object"
+                        string="Verificar" icon="fa-refresh" class="btn-link"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- WhatsApp Phone Action -->
+    <record id="action_chatbot_whatsapp_phone" model="ir.actions.act_window">
+        <field name="name">Teléfonos WhatsApp</field>
+        <field name="res_model">hospital.chatbot.whatsapp.phone</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registrar un número de WhatsApp
+            </p>
+            <p>Asocie números de teléfono con chatbots para recibir y enviar mensajes.</p>
+            <p>Configure la URL del servicio WhatsApp en: Ajustes → Parámetros del sistema → hospital_chatbot.whatsapp_service_url</p>
+        </field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="chatbot_menu_whatsapp_phones"
+              name="Teléfonos WhatsApp"
+              parent="chatbot_menu_config"
+              action="action_chatbot_whatsapp_phone"
+              sequence="40"/>
+</odoo>

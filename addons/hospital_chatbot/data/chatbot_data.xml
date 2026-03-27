@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Webhook secret config parameter -->
+    <record id="chatbot_webhook_secret" model="ir.config_parameter">
+        <field name="key">hospital_chatbot.webhook_secret</field>
+        <field name="value">change-me-in-production</field>
+    </record>
+
+    <!-- Gemini API key config parameter -->
+    <record id="chatbot_gemini_api_key" model="ir.config_parameter">
+        <field name="key">hospital_chatbot.gemini_api_key</field>
+        <field name="value"></field>
+    </record>
+
+    <!-- WhatsApp service URL -->
+    <record id="chatbot_whatsapp_service_url" model="ir.config_parameter">
+        <field name="key">hospital_chatbot.whatsapp_service_url</field>
+        <field name="value">https://apiwhatsapp.solnustec.com</field>
+    </record>
+</odoo>

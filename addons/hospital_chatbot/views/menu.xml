@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Root menu -->
+    <menuitem id="chatbot_menu_root"
+              name="Chatbot"
+              web_icon="hospital_chatbot,static/description/icon.png"
+              groups="hospital_chatbot.group_chatbot_user"
+              sequence="50"/>
+
+    <!-- Chatbot config submenu -->
+    <menuitem id="chatbot_menu_config"
+              name="Configuración"
+              parent="chatbot_menu_root"
+              groups="hospital_chatbot.group_chatbot_manager"
+              sequence="10"/>
+
+    <!-- Conversations submenu -->
+    <menuitem id="chatbot_menu_conversations"
+              name="Conversaciones"
+              parent="chatbot_menu_root"
+              sequence="20"/>
+
+    <!-- Reports submenu -->
+    <menuitem id="chatbot_menu_reports"
+              name="Reportes"
+              parent="chatbot_menu_root"
+              groups="hospital_chatbot.group_chatbot_manager"
+              sequence="30"/>
+</odoo>

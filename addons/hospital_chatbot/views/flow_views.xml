@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Flow Form View -->
+    <record id="hospital_chatbot_flow_view_form" model="ir.ui.view">
+        <field name="name">hospital.chatbot.flow.form</field>
+        <field name="model">hospital.chatbot.flow</field>
+        <field name="arch" type="xml">
+            <form string="Flujo">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del flujo"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="chatbot_id"/>
+                            <field name="is_main" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="trigger_keywords" widget="json"/>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Constructor visual" name="builder">
+                            <widget name="flow_builder"/>
+                        </page>
+                        <page string="Nodos (lista)" name="nodes">
+                            <field name="node_ids">
+                                <tree editable="bottom">
+                                    <field name="order" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="node_type"/>
+                                    <field name="is_start" widget="boolean_toggle"/>
+                                    <field name="config" widget="json" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Flow Tree View -->
+    <record id="hospital_chatbot_flow_view_tree" model="ir.ui.view">
+        <field name="name">hospital.chatbot.flow.tree</field>
+        <field name="model">hospital.chatbot.flow</field>
+        <field name="arch" type="xml">
+            <tree string="Flujos">
+                <field name="name"/>
+                <field name="chatbot_id"/>
+                <field name="is_main" widget="boolean_toggle"/>
+                <field name="node_count"/>
+                <field name="trigger_keywords"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Flow Search View -->
+    <record id="hospital_chatbot_flow_view_search" model="ir.ui.view">
+        <field name="name">hospital.chatbot.flow.search</field>
+        <field name="model">hospital.chatbot.flow</field>
+        <field name="arch" type="xml">
+            <search string="Flujos">
+                <field name="name"/>
+                <field name="chatbot_id"/>
+                <filter name="main" string="Principales" domain="[('is_main', '=', True)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="chatbot_id" string="Chatbot" context="{'group_by': 'chatbot_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Flow Action -->
+    <record id="action_chatbot_flow" model="ir.actions.act_window">
+        <field name="name">Flujos</field>
+        <field name="res_model">hospital.chatbot.flow</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_chatbot_id': active_id}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear un nuevo flujo de conversación
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="chatbot_menu_flows"
+              name="Flujos"
+              parent="chatbot_menu_config"
+              action="action_chatbot_flow"
+              sequence="20"/>
+</odoo>

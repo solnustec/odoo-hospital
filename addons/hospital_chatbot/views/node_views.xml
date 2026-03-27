@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Node Form View -->
+    <record id="hospital_chatbot_node_view_form" model="ir.ui.view">
+        <field name="name">hospital.chatbot.node.form</field>
+        <field name="model">hospital.chatbot.node</field>
+        <field name="arch" type="xml">
+            <form string="Nodo">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del nodo"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="flow_id"/>
+                            <field name="node_type"/>
+                            <field name="is_start" widget="boolean_toggle"/>
+                            <field name="order"/>
+                        </group>
+                        <group>
+                            <field name="position_x"/>
+                            <field name="position_y"/>
+                        </group>
+                    </group>
+                    <group string="Configuración del nodo">
+                        <field name="config" widget="json"/>
+                    </group>
+                    <notebook>
+                        <page string="Opciones de menú" name="menu_options"
+                              invisible="node_type != 'MENU'">
+                            <field name="menu_option_ids">
+                                <tree editable="bottom">
+                                    <field name="option_number"/>
+                                    <field name="option_text"/>
+                                    <field name="next_node_id"
+                                           domain="[('flow_id', '=', parent.flow_id)]"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Conexiones salientes" name="outgoing">
+                            <field name="outgoing_connection_ids">
+                                <tree editable="bottom">
+                                    <field name="to_node_id"
+                                           domain="[('flow_id', '=', parent.flow_id)]"/>
+                                    <field name="condition"/>
+                                    <field name="option_value"/>
+                                    <field name="label"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Node Tree View -->
+    <record id="hospital_chatbot_node_view_tree" model="ir.ui.view">
+        <field name="name">hospital.chatbot.node.tree</field>
+        <field name="model">hospital.chatbot.node</field>
+        <field name="arch" type="xml">
+            <tree string="Nodos">
+                <field name="order" widget="handle"/>
+                <field name="name"/>
+                <field name="node_type"/>
+                <field name="flow_id"/>
+                <field name="is_start" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Node Action -->
+    <record id="action_chatbot_node" model="ir.actions.act_window">
+        <field name="name">Nodos</field>
+        <field name="res_model">hospital.chatbot.node</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear un nuevo nodo
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="chatbot_menu_nodes"
+              name="Nodos"
+              parent="chatbot_menu_config"
+              action="action_chatbot_node"
+              sequence="30"/>
+</odoo>

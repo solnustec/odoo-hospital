@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="hospital_chatbot.FlowBuilder">
+    <div class="flow-builder-container" t-ref="canvas"
+         t-on-mousedown="onCanvasMouseDown"
+         t-on-wheel="onWheel"
+         t-on-contextmenu="onContextMenu">
+
+        <!-- Node type palette -->
+        <div class="flow-builder-palette">
+            <div class="palette-title">Nodos</div>
+            <t t-foreach="getNodeTypes()" t-as="ntype" t-key="ntype">
+                <div class="palette-item" t-on-click="() => this.addNodeFromPalette(ntype)"
+                     t-attf-style="border-left: 3px solid #{getNodeColor(ntype)}">
+                    <i t-attf-class="fa #{getNodeIcon(ntype)}"/> <t t-esc="ntype"/>
+                </div>
+            </t>
+        </div>
+
+        <!-- Canvas area -->
+        <div class="flow-builder-canvas" t-attf-style="transform: #{getTransform()}; transform-origin: 0 0;">
+
+            <!-- SVG layer for connections -->
+            <svg class="flow-builder-svg">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7"
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+                    </marker>
+                </defs>
+                <t t-foreach="state.connections" t-as="conn" t-key="conn.id">
+                    <path t-att-d="getConnectionPath(conn)"
+                          class="flow-connection"
+                          marker-end="url(#arrowhead)"
+                          t-on-dblclick.stop="() => this.deleteConnection(conn.id)"/>
+                    <t t-set="mid" t-value="getConnectionMidpoint(conn)"/>
+                    <text t-if="conn.option_value || conn.label"
+                          t-att-x="mid.x" t-att-y="mid.y - 8"
+                          class="flow-connection-label">
+                        <t t-esc="conn.label || conn.option_value"/>
+                    </text>
+                </t>
+            </svg>
+
+            <!-- Nodes -->
+            <t t-foreach="state.nodes" t-as="node" t-key="node.id">
+                <div class="flow-node"
+                     t-attf-class="flow-node #{state.selectedNode === node.id ? 'selected' : ''} #{node.is_start ? 'start-node' : ''}"
+                     t-attf-style="left: #{node.position_x}px; top: #{node.position_y}px; border-color: #{getNodeColor(node.node_type)};"
+                     t-on-mousedown.stop="(ev) => this.onNodeMouseDown(ev, node)"
+                     t-on-dblclick="(ev) => this.onNodeDblClick(ev, node)"
+                     t-on-contextmenu="(ev) => this.onNodeContextMenu(ev, node)">
+
+                    <!-- Header -->
+                    <div class="flow-node-header" t-attf-style="background-color: #{getNodeColor(node.node_type)};">
+                        <i t-attf-class="fa #{getNodeIcon(node.node_type)}"/>
+                        <span class="node-type-label" t-esc="node.node_type"/>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="flow-node-body">
+                        <span t-esc="node.name"/>
+                        <span t-if="node.is_start" class="badge badge-success start-badge">START</span>
+                    </div>
+
+                    <!-- Input port (left) -->
+                    <div class="flow-port input-port"
+                         t-on-mouseup.stop="(ev) => this.onPortMouseUp(ev, node, 'input')"/>
+
+                    <!-- Output port (right) -->
+                    <div class="flow-port output-port"
+                         t-on-mousedown.stop="(ev) => this.onPortMouseDown(ev, node, 'output')"/>
+                </div>
+            </t>
+        </div>
+
+        <!-- Context menu -->
+        <div t-if="state.contextMenu" class="flow-context-menu"
+             t-attf-style="left: #{state.contextMenu.x}px; top: #{state.contextMenu.y}px;">
+            <t t-if="!state.contextMenu.nodeId">
+                <div class="context-menu-title">Agregar nodo</div>
+                <t t-foreach="getNodeTypes()" t-as="ntype" t-key="ntype">
+                    <div class="context-menu-item" t-on-click="() => this.addNode(ntype)">
+                        <i t-attf-class="fa #{getNodeIcon(ntype)}"
+                           t-attf-style="color: #{getNodeColor(ntype)}"/>
+                        <t t-esc="ntype"/>
+                    </div>
+                </t>
+            </t>
+            <t t-else="">
+                <div class="context-menu-item" t-on-click="() => this.openNodeForm(state.contextMenu.nodeId)">
+                    <i class="fa fa-pencil"/> Editar
+                </div>
+                <div class="context-menu-item text-danger" t-on-click="() => this.deleteNode(state.contextMenu.nodeId)">
+                    <i class="fa fa-trash"/> Eliminar
+                </div>
+            </t>
+        </div>
+
+        <!-- Instructions -->
+        <div class="flow-builder-help" t-if="state.nodes.length === 0">
+            <p><i class="fa fa-info-circle"/> Haz clic derecho para agregar nodos.</p>
+            <p>Arrastra desde el puerto derecho <i class="fa fa-circle text-success"/> al puerto izquierdo <i class="fa fa-circle text-primary"/> para conectar.</p>
+        </div>
+    </div>
+</t>
+
+</templates>

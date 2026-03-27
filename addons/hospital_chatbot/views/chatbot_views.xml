@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Chatbot Form View -->
+    <record id="hospital_chatbot_view_form" model="ir.ui.view">
+        <field name="name">hospital.chatbot.form</field>
+        <field name="model">hospital.chatbot</field>
+        <field name="arch" type="xml">
+            <form string="Chatbot">
+                <header>
+                    <button name="%(hospital_chatbot.action_chatbot_test_wizard)d"
+                            type="action" string="Probar chatbot"
+                            class="btn-primary" icon="fa-play"
+                            context="{'default_chatbot_id': active_id}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(hospital_chatbot.action_chatbot_flow)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-sitemap"
+                                context="{'default_chatbot_id': active_id, 'search_default_chatbot_id': active_id}">
+                            <field name="flow_count" widget="statinfo" string="Flujos"/>
+                        </button>
+                        <button name="%(hospital_chatbot.action_chatbot_session)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-comments"
+                                context="{'search_default_chatbot_id': active_id}">
+                            <field name="active_session_count" widget="statinfo" string="Sesiones"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Inactivo" bg_color="text-bg-danger"
+                            invisible="is_active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del chatbot"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="is_active" widget="boolean_toggle"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="session_timeout_minutes"/>
+                        </group>
+                        <group>
+                            <field name="welcome_message" placeholder="¡Hola! ¿En qué puedo ayudarte?"/>
+                            <field name="fallback_message"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Agente IA" name="ai_config">
+                            <group>
+                                <group>
+                                    <field name="ai_enabled" widget="boolean_toggle"/>
+                                    <field name="ai_agent_name"
+                                           placeholder="Sofía"
+                                           invisible="not ai_enabled"/>
+                                    <field name="ai_emotion" invisible="not ai_enabled"/>
+                                    <field name="ai_seriousness"
+                                           widget="progressbar"
+                                           invisible="not ai_enabled"/>
+                                    <field name="ai_max_history_messages"
+                                           invisible="not ai_enabled"/>
+                                </group>
+                            </group>
+                            <group invisible="not ai_enabled">
+                                <field name="ai_system_prompt"
+                                       placeholder="Eres un asistente médico del Hospital..."
+                                       widget="text"/>
+                            </group>
+                        </page>
+                        <page string="Teléfonos WhatsApp" name="whatsapp_phones">
+                            <field name="whatsapp_phone_ids">
+                                <tree editable="bottom">
+                                    <field name="phone_number"/>
+                                    <field name="is_active" widget="boolean_toggle"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Chatbot Tree View -->
+    <record id="hospital_chatbot_view_tree" model="ir.ui.view">
+        <field name="name">hospital.chatbot.tree</field>
+        <field name="model">hospital.chatbot</field>
+        <field name="arch" type="xml">
+            <tree string="Chatbots">
+                <field name="name"/>
+                <field name="is_active" widget="boolean_toggle"/>
+                <field name="ai_enabled" widget="boolean_toggle"/>
+                <field name="flow_count"/>
+                <field name="active_session_count"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Chatbot Kanban View -->
+    <record id="hospital_chatbot_view_kanban" model="ir.ui.view">
+        <field name="name">hospital.chatbot.kanban</field>
+        <field name="model">hospital.chatbot</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="is_active"/>
+                <field name="ai_enabled"/>
+                <field name="flow_count"/>
+                <field name="active_session_count"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top mb-0">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <span t-if="record.is_active.raw_value"
+                                          class="badge text-bg-success">Activo</span>
+                                    <span t-else=""
+                                          class="badge text-bg-danger">Inactivo</span>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <span><i class="fa fa-sitemap"/> <field name="flow_count"/> flujos</span>
+                                        <span class="ms-2"><i class="fa fa-comments"/> <field name="active_session_count"/> sesiones</span>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <span t-if="record.ai_enabled.raw_value"
+                                              class="badge text-bg-info">IA</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Chatbot Action -->
+    <record id="action_chatbot" model="ir.actions.act_window">
+        <field name="name">Chatbots</field>
+        <field name="res_model">hospital.chatbot</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear un nuevo chatbot
+            </p>
+            <p>Configure chatbots para atención automatizada por WhatsApp.</p>
+        </field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="chatbot_menu_chatbots"
+              name="Chatbots"
+              parent="chatbot_menu_config"
+              action="action_chatbot"
+              sequence="10"/>
+</odoo>
