@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_booking_config_user,hospital.booking.config.user,model_hospital_booking_config,group_booking_user,1,0,0,0
+access_booking_config_manager,hospital.booking.config.manager,model_hospital_booking_config,group_booking_manager,1,1,1,1

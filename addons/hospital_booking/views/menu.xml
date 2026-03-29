@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Top-level menu -->
+    <menuitem id="menu_booking_root"
+              name="Citas"
+              web_icon="hospital_booking,static/description/icon.png"
+              sequence="25"/>
+
+    <!-- Agenda (calendar view) -->
+    <menuitem id="menu_booking_agenda"
+              name="Agenda"
+              parent="menu_booking_root"
+              action="action_appointment_calendar"
+              sequence="10"/>
+
+    <!-- Citas (list view) -->
+    <menuitem id="menu_booking_appointments"
+              name="Citas"
+              parent="menu_booking_root"
+              action="action_appointment_list"
+              sequence="20"/>
+
+    <!-- Doctores -->
+    <menuitem id="menu_booking_doctors"
+              name="Médicos"
+              parent="menu_booking_root"
+              action="action_doctors"
+              sequence="30"/>
+
+    <!-- Configuración -->
+    <menuitem id="menu_booking_config"
+              name="Configuración"
+              parent="menu_booking_root"
+              groups="group_booking_manager"
+              sequence="90"/>
+
+    <menuitem id="menu_booking_config_policies"
+              name="Políticas de Citas"
+              parent="menu_booking_config"
+              action="action_booking_config"
+              sequence="10"/>
+</odoo>

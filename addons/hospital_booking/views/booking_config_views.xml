@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Booking Config Form -->
+    <record id="view_booking_config_form" model="ir.ui.view">
+        <field name="name">hospital.booking.config.form</field>
+        <field name="model">hospital.booking.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuración de Citas">
+                <sheet>
+                    <group string="General">
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="default_slot_duration"/>
+                            <field name="buffer_between_appointments"/>
+                            <field name="auto_confirm"/>
+                        </group>
+                        <group>
+                            <field name="min_advance_booking_hours"/>
+                            <field name="max_advance_booking_days"/>
+                            <field name="free_cancellation_hours"/>
+                        </group>
+                    </group>
+                    <group string="Límites por paciente">
+                        <group>
+                            <field name="max_appointments_per_patient_day"/>
+                            <field name="max_pending_per_patient"/>
+                        </group>
+                        <group>
+                            <field name="max_no_shows_before_block"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Booking Config Action -->
+    <record id="action_booking_config" model="ir.actions.act_window">
+        <field name="name">Políticas de Citas</field>
+        <field name="res_model">hospital.booking.config</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
+</odoo>

@@ -12,6 +12,18 @@
         <field name="active">True</field>
     </record>
 
+    <!-- Daily token usage aggregation cron -->
+    <record id="ir_cron_chatbot_aggregate_token_usage" model="ir.cron">
+        <field name="name">Chatbot: Agregar uso diario de tokens IA</field>
+        <field name="model_id" ref="model_hospital_chatbot_ai_token_daily"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_aggregate_daily_usage()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+
     <!-- Appointment reminder cron -->
     <record id="ir_cron_chatbot_appointment_reminders" model="ir.cron">
         <field name="name">Chatbot: Enviar recordatorios de citas</field>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Appointment Calendar View -->
+    <record id="view_appointment_calendar" model="ir.ui.view">
+        <field name="name">appointment.calendar</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <calendar string="Agenda" date_start="start" date_stop="stop"
+                      color="color" mode="week" event_limit="5"
+                      quick_create="0">
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="service_id"/>
+                <field name="appointment_status"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Appointment List View -->
+    <record id="view_appointment_tree" model="ir.ui.view">
+        <field name="name">appointment.tree</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <tree string="Citas"
+                  decoration-muted="appointment_status == 'cancelled'"
+                  decoration-success="appointment_status == 'done'"
+                  decoration-warning="appointment_status == 'in_progress'"
+                  decoration-danger="appointment_status == 'no_show'"
+                  default_order="start desc">
+                <field name="start" string="Fecha y hora"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="service_id"/>
+                <field name="appointment_status" widget="badge"
+                       decoration-info="appointment_status == 'confirmed'"
+                       decoration-success="appointment_status == 'done'"
+                       decoration-warning="appointment_status in ('draft', 'in_progress')"
+                       decoration-danger="appointment_status in ('cancelled', 'no_show')"/>
+                <field name="appointment_origin" optional="hide"/>
+                <field name="patient_phone" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Appointment Form View -->
+    <record id="view_appointment_form" model="ir.ui.view">
+        <field name="name">appointment.form</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <form string="Cita Médica">
+                <header>
+                    <button name="action_confirm" type="object"
+                            string="Confirmar" class="btn-primary"
+                            invisible="appointment_status != 'draft'"/>
+                    <button name="action_start" type="object"
+                            string="Iniciar atención" class="btn-primary"
+                            invisible="appointment_status != 'confirmed'"/>
+                    <button name="action_done" type="object"
+                            string="Completar" class="btn-success"
+                            invisible="appointment_status not in ('confirmed', 'in_progress')"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancelar" class="btn-warning"
+                            invisible="appointment_status in ('done', 'cancelled')"
+                            confirm="¿Está seguro de cancelar esta cita?"/>
+                    <button name="action_no_show" type="object"
+                            string="Ausente" class="btn-danger"
+                            invisible="appointment_status not in ('draft', 'confirmed')"/>
+                    <button name="action_reset_draft" type="object"
+                            string="Reabrir" class="btn-secondary"
+                            invisible="appointment_status not in ('cancelled', 'no_show')"/>
+                    <field name="appointment_status" widget="statusbar"
+                           statusbar_visible="draft,confirmed,in_progress,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Cita">
+                            <field name="start"/>
+                            <field name="stop"/>
+                            <field name="doctor_id"/>
+                            <field name="service_id"/>
+                            <field name="appointment_origin"/>
+                        </group>
+                        <group string="Paciente">
+                            <field name="patient_id"/>
+                            <field name="patient_phone"/>
+                        </group>
+                    </group>
+                    <group string="Notas">
+                        <field name="appointment_notes" nolabel="1"
+                               placeholder="Notas internas..."/>
+                    </group>
+                    <group string="Cancelación"
+                           invisible="appointment_status != 'cancelled'">
+                        <field name="cancellation_reason"/>
+                    </group>
+                    <field name="is_appointment" invisible="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Appointment Kanban View -->
+    <record id="view_appointment_kanban" model="ir.ui.view">
+        <field name="name">appointment.kanban</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="appointment_status" class="o_kanban_small_column">
+                <field name="color"/>
+                <templates>
+                    <t t-name="card">
+                        <div>
+                            <strong><field name="patient_id"/></strong>
+                        </div>
+                        <div>
+                            <field name="doctor_id"/> — <field name="service_id"/>
+                        </div>
+                        <div class="text-muted">
+                            <field name="start" widget="datetime"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Appointment Search View -->
+    <record id="view_appointment_search" model="ir.ui.view">
+        <field name="name">appointment.search</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <search string="Buscar citas">
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="patient_phone"/>
+                <filter name="is_appointment" string="Citas médicas"
+                        domain="[('is_appointment', '=', True)]"/>
+                <separator/>
+                <filter name="today" string="Hoy"
+                        domain="[('start', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))),
+                                 ('start', '&lt;', datetime.datetime.combine(context_today() + datetime.timedelta(days=1), datetime.time(0,0,0)))]"/>
+                <filter name="upcoming" string="Próximas"
+                        domain="[('start', '&gt;=', datetime.datetime.now())]"/>
+                <separator/>
+                <filter name="draft" string="Borrador"
+                        domain="[('appointment_status', '=', 'draft')]"/>
+                <filter name="confirmed" string="Confirmadas"
+                        domain="[('appointment_status', '=', 'confirmed')]"/>
+                <filter name="done" string="Completadas"
+                        domain="[('appointment_status', '=', 'done')]"/>
+                <filter name="cancelled" string="Canceladas"
+                        domain="[('appointment_status', '=', 'cancelled')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_doctor" string="Médico"
+                            context="{'group_by': 'doctor_id'}"/>
+                    <filter name="group_status" string="Estado"
+                            context="{'group_by': 'appointment_status'}"/>
+                    <filter name="group_date" string="Fecha"
+                            context="{'group_by': 'start:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Appointment Actions -->
+    <record id="action_appointment_calendar" model="ir.actions.act_window">
+        <field name="name">Agenda</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">calendar,tree,form,kanban</field>
+        <field name="domain">[('is_appointment', '=', True)]</field>
+        <field name="context">{'default_is_appointment': True, 'search_default_is_appointment': 1, 'search_default_upcoming': 1}</field>
+    </record>
+
+    <record id="action_appointment_list" model="ir.actions.act_window">
+        <field name="name">Citas</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">tree,form,calendar,kanban</field>
+        <field name="domain">[('is_appointment', '=', True)]</field>
+        <field name="context">{'default_is_appointment': True, 'search_default_is_appointment': 1}</field>
+    </record>
+</odoo>

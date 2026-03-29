@@ -24,7 +24,7 @@ class ChatbotWebhookController(http.Controller):
             .sudo()
             .get_param("hospital_chatbot.webhook_secret", "")
         )
-        if not expected or expected == "change-me-in-production":
+        if not expected:
             return True
         received = request.httprequest.headers.get("X-Webhook-Secret", "")
         return received == expected

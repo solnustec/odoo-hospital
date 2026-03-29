@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Default booking config for main company -->
+    <record id="default_booking_config" model="hospital.booking.config">
+        <field name="company_id" ref="base.main_company"/>
+        <field name="default_slot_duration">30</field>
+        <field name="buffer_between_appointments">15</field>
+        <field name="min_advance_booking_hours">2</field>
+        <field name="max_advance_booking_days">60</field>
+        <field name="auto_confirm" eval="True"/>
+        <field name="max_appointments_per_patient_day">3</field>
+        <field name="max_pending_per_patient">5</field>
+        <field name="max_no_shows_before_block">3</field>
+        <field name="free_cancellation_hours">24</field>
+    </record>
+</odoo>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend hr.employee form with booking tab -->
+    <record id="view_employee_form_booking" model="ir.ui.view">
+        <field name="name">hr.employee.form.booking</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Citas" name="booking">
+                    <group>
+                        <group>
+                            <field name="is_doctor"/>
+                            <field name="accepting_appointments"
+                                   invisible="not is_doctor"/>
+                        </group>
+                        <group invisible="not is_doctor">
+                            <field name="slot_duration"
+                                   placeholder="Usar valor por defecto"/>
+                            <field name="buffer_time"
+                                   placeholder="Usar valor por defecto"/>
+                            <field name="max_daily_appointments"
+                                   placeholder="Sin límite"/>
+                        </group>
+                    </group>
+                    <group string="Servicios médicos"
+                           invisible="not is_doctor">
+                        <field name="booking_service_ids" nolabel="1"
+                               widget="many2many_tags"/>
+                    </group>
+                </page>
+            </xpath>
+            <!-- Stat button for appointment count -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_appointments" type="object"
+                        class="oe_stat_button" icon="fa-calendar"
+                        invisible="not is_doctor">
+                    <field name="appointment_count" widget="statinfo"
+                           string="Citas"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Doctor list action (filtered hr.employee) -->
+    <record id="action_doctors" model="ir.actions.act_window">
+        <field name="name">Médicos</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_doctor', '=', True)]</field>
+        <field name="context">{'default_is_doctor': True}</field>
+    </record>
+</odoo>

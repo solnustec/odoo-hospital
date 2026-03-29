@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- ==================== -->
+    <!-- Resource Calendars   -->
+    <!-- ==================== -->
+
+    <!-- Morning doctor: Mon-Fri 07:00-13:00 -->
+    <record id="calendar_morning" model="resource.calendar">
+        <field name="name">Horario Matutino</field>
+        <field name="tz">America/Guayaquil</field>
+    </record>
+    <record id="att_morning_mon" model="resource.calendar.attendance">
+        <field name="name">Lunes</field>
+        <field name="calendar_id" ref="calendar_morning"/>
+        <field name="dayofweek">0</field>
+        <field name="hour_from">7.0</field>
+        <field name="hour_to">13.0</field>
+        <field name="day_period">morning</field>
+    </record>
+    <record id="att_morning_tue" model="resource.calendar.attendance">
+        <field name="name">Martes</field>
+        <field name="calendar_id" ref="calendar_morning"/>
+        <field name="dayofweek">1</field>
+        <field name="hour_from">7.0</field>
+        <field name="hour_to">13.0</field>
+        <field name="day_period">morning</field>
+    </record>
+    <record id="att_morning_wed" model="resource.calendar.attendance">
+        <field name="name">Miércoles</field>
+        <field name="calendar_id" ref="calendar_morning"/>
+        <field name="dayofweek">2</field>
+        <field name="hour_from">7.0</field>
+        <field name="hour_to">13.0</field>
+        <field name="day_period">morning</field>
+    </record>
+    <record id="att_morning_thu" model="resource.calendar.attendance">
+        <field name="name">Jueves</field>
+        <field name="calendar_id" ref="calendar_morning"/>
+        <field name="dayofweek">3</field>
+        <field name="hour_from">7.0</field>
+        <field name="hour_to">13.0</field>
+        <field name="day_period">morning</field>
+    </record>
+    <record id="att_morning_fri" model="resource.calendar.attendance">
+        <field name="name">Viernes</field>
+        <field name="calendar_id" ref="calendar_morning"/>
+        <field name="dayofweek">4</field>
+        <field name="hour_from">7.0</field>
+        <field name="hour_to">13.0</field>
+        <field name="day_period">morning</field>
+    </record>
+
+    <!-- Full day doctor: Mon-Fri 08:00-12:00, 14:00-18:00 -->
+    <record id="calendar_fullday" model="resource.calendar">
+        <field name="name">Horario Completo</field>
+        <field name="tz">America/Guayaquil</field>
+    </record>
+    <record id="att_full_mon_am" model="resource.calendar.attendance">
+        <field name="name">Lunes AM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">0</field>
+        <field name="hour_from">8.0</field>
+        <field name="hour_to">12.0</field>
+        <field name="day_period">morning</field>
+    </record>
+    <record id="att_full_mon_pm" model="resource.calendar.attendance">
+        <field name="name">Lunes PM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">0</field>
+        <field name="hour_from">14.0</field>
+        <field name="hour_to">18.0</field>
+        <field name="day_period">afternoon</field>
+    </record>
+    <record id="att_full_tue_am" model="resource.calendar.attendance">
+        <field name="name">Martes AM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">1</field>
+        <field name="hour_from">8.0</field>
+        <field name="hour_to">12.0</field>
+        <field name="day_period">morning</field>
+    </record>
+    <record id="att_full_tue_pm" model="resource.calendar.attendance">
+        <field name="name">Martes PM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">1</field>
+        <field name="hour_from">14.0</field>
+        <field name="hour_to">18.0</field>
+        <field name="day_period">afternoon</field>
+    </record>
+    <record id="att_full_wed_am" model="resource.calendar.attendance">
+        <field name="name">Miércoles AM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">2</field>
+        <field name="hour_from">8.0</field>
+        <field name="hour_to">12.0</field>
+        <field name="day_period">morning</field>
+    </record>
+    <record id="att_full_wed_pm" model="resource.calendar.attendance">
+        <field name="name">Miércoles PM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">2</field>
+        <field name="hour_from">14.0</field>
+        <field name="hour_to">18.0</field>
+        <field name="day_period">afternoon</field>
+    </record>
+    <record id="att_full_thu_am" model="resource.calendar.attendance">
+        <field name="name">Jueves AM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">3</field>
+        <field name="hour_from">8.0</field>
+        <field name="hour_to">12.0</field>
+        <field name="day_period">morning</field>
+    </record>
+    <record id="att_full_thu_pm" model="resource.calendar.attendance">
+        <field name="name">Jueves PM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">3</field>
+        <field name="hour_from">14.0</field>
+        <field name="hour_to">18.0</field>
+        <field name="day_period">afternoon</field>
+    </record>
+    <record id="att_full_fri_am" model="resource.calendar.attendance">
+        <field name="name">Viernes AM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">4</field>
+        <field name="hour_from">8.0</field>
+        <field name="hour_to">12.0</field>
+        <field name="day_period">morning</field>
+    </record>
+    <record id="att_full_fri_pm" model="resource.calendar.attendance">
+        <field name="name">Viernes PM</field>
+        <field name="calendar_id" ref="calendar_fullday"/>
+        <field name="dayofweek">4</field>
+        <field name="hour_from">14.0</field>
+        <field name="hour_to">18.0</field>
+        <field name="day_period">afternoon</field>
+    </record>
+
+    <!-- ==================== -->
+    <!-- Medical Services     -->
+    <!-- ==================== -->
+
+    <record id="service_general" model="product.template">
+        <field name="name">Consulta General</field>
+        <field name="type">service</field>
+        <field name="list_price">35.00</field>
+    </record>
+    <record id="service_pediatria" model="product.template">
+        <field name="name">Consulta Pediátrica</field>
+        <field name="type">service</field>
+        <field name="list_price">40.00</field>
+    </record>
+    <record id="service_cardiologia" model="product.template">
+        <field name="name">Consulta Cardiológica</field>
+        <field name="type">service</field>
+        <field name="list_price">60.00</field>
+    </record>
+    <record id="service_dermatologia" model="product.template">
+        <field name="name">Consulta Dermatológica</field>
+        <field name="type">service</field>
+        <field name="list_price">50.00</field>
+    </record>
+    <record id="service_ginecologia" model="product.template">
+        <field name="name">Consulta Ginecológica</field>
+        <field name="type">service</field>
+        <field name="list_price">55.00</field>
+    </record>
+    <record id="service_traumatologia" model="product.template">
+        <field name="name">Consulta Traumatología</field>
+        <field name="type">service</field>
+        <field name="list_price">50.00</field>
+    </record>
+
+    <!-- ==================== -->
+    <!-- Doctors (employees)  -->
+    <!-- ==================== -->
+
+    <record id="doctor_garcia" model="hr.employee">
+        <field name="name">Dr. Carlos García</field>
+        <field name="job_title">Médico General</field>
+        <field name="work_phone">022345001</field>
+        <field name="work_email">carlos.garcia@hospital-demo.com</field>
+        <field name="is_doctor" eval="True"/>
+        <field name="accepting_appointments" eval="True"/>
+        <field name="resource_calendar_id" ref="calendar_fullday"/>
+        <field name="slot_duration">30</field>
+        <field name="buffer_time">10</field>
+        <field name="max_daily_appointments">16</field>
+
+    </record>
+
+    <record id="doctor_morales" model="hr.employee">
+        <field name="name">Dra. Ana Morales</field>
+        <field name="job_title">Pediatra</field>
+        <field name="work_phone">022345002</field>
+        <field name="work_email">ana.morales@hospital-demo.com</field>
+        <field name="is_doctor" eval="True"/>
+        <field name="accepting_appointments" eval="True"/>
+        <field name="resource_calendar_id" ref="calendar_morning"/>
+        <field name="slot_duration">30</field>
+        <field name="buffer_time">15</field>
+        <field name="max_daily_appointments">10</field>
+
+    </record>
+
+    <record id="doctor_rodriguez" model="hr.employee">
+        <field name="name">Dr. Miguel Rodríguez</field>
+        <field name="job_title">Cardiólogo</field>
+        <field name="work_phone">022345003</field>
+        <field name="work_email">miguel.rodriguez@hospital-demo.com</field>
+        <field name="is_doctor" eval="True"/>
+        <field name="accepting_appointments" eval="True"/>
+        <field name="resource_calendar_id" ref="calendar_fullday"/>
+        <field name="slot_duration">45</field>
+        <field name="buffer_time">15</field>
+        <field name="max_daily_appointments">10</field>
+
+    </record>
+
+    <record id="doctor_luna" model="hr.employee">
+        <field name="name">Dra. Patricia Luna</field>
+        <field name="job_title">Dermatóloga</field>
+        <field name="work_phone">022345004</field>
+        <field name="work_email">patricia.luna@hospital-demo.com</field>
+        <field name="is_doctor" eval="True"/>
+        <field name="accepting_appointments" eval="True"/>
+        <field name="resource_calendar_id" ref="calendar_morning"/>
+        <field name="slot_duration">20</field>
+        <field name="buffer_time">10</field>
+
+    </record>
+
+    <record id="doctor_vega" model="hr.employee">
+        <field name="name">Dra. María Vega</field>
+        <field name="job_title">Ginecóloga</field>
+        <field name="work_phone">022345005</field>
+        <field name="work_email">maria.vega@hospital-demo.com</field>
+        <field name="is_doctor" eval="True"/>
+        <field name="accepting_appointments" eval="True"/>
+        <field name="resource_calendar_id" ref="calendar_fullday"/>
+        <field name="slot_duration">40</field>
+        <field name="buffer_time">15</field>
+        <field name="max_daily_appointments">8</field>
+
+    </record>
+
+    <record id="doctor_inactive" model="hr.employee">
+        <field name="name">Dr. Roberto Paz (Vacaciones)</field>
+        <field name="job_title">Traumatólogo</field>
+        <field name="work_email">roberto.paz@hospital-demo.com</field>
+        <field name="is_doctor" eval="True"/>
+        <field name="accepting_appointments" eval="False"/>
+        <field name="resource_calendar_id" ref="calendar_fullday"/>
+
+    </record>
+
+    <!-- ==================== -->
+    <!-- Patients (partners)  -->
+    <!-- ==================== -->
+
+    <record id="patient_martinez" model="res.partner">
+        <field name="name">José Martínez</field>
+        <field name="phone">593984001001</field>
+        <field name="mobile">593984001001</field>
+        <field name="email">jose.martinez@mail.com</field>
+        <field name="street">Av. 10 de Agosto N34-56</field>
+        <field name="city">Quito</field>
+    </record>
+
+    <record id="patient_lopez" model="res.partner">
+        <field name="name">María López</field>
+        <field name="phone">593984002002</field>
+        <field name="mobile">593984002002</field>
+        <field name="email">maria.lopez@mail.com</field>
+        <field name="street">Calle Bolívar 123</field>
+        <field name="city">Guayaquil</field>
+    </record>
+
+    <record id="patient_torres" model="res.partner">
+        <field name="name">Pedro Torres</field>
+        <field name="phone">593984003003</field>
+        <field name="mobile">593984003003</field>
+        <field name="email">pedro.torres@mail.com</field>
+        <field name="street">Av. Amazonas N45-12</field>
+        <field name="city">Quito</field>
+    </record>
+
+    <record id="patient_herrera" model="res.partner">
+        <field name="name">Laura Herrera</field>
+        <field name="phone">593984004004</field>
+        <field name="mobile">593984004004</field>
+        <field name="email">laura.herrera@mail.com</field>
+        <field name="street">Calle Sucre 456</field>
+        <field name="city">Cuenca</field>
+    </record>
+
+    <record id="patient_castillo" model="res.partner">
+        <field name="name">Andrés Castillo</field>
+        <field name="phone">593984005005</field>
+        <field name="mobile">593984005005</field>
+        <field name="email">andres.castillo@mail.com</field>
+        <field name="street">Av. Orellana E12-34</field>
+        <field name="city">Quito</field>
+    </record>
+
+    <record id="patient_noshow" model="res.partner">
+        <field name="name">Carlos Ruiz (Frecuente ausente)</field>
+        <field name="phone">593984006006</field>
+        <field name="email">carlos.ruiz@mail.com</field>
+        <field name="city">Ambato</field>
+    </record>
+
+</odoo>

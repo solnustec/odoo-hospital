@@ -10,7 +10,7 @@
     """,
     "author": "Solnus",
     "website": "https://www.solnustec.com",
-    "depends": ["base", "website", "hr", "calendar"],
+    "depends": ["base", "website", "hr", "calendar", "hospital_booking"],
     "data": [
         "security/chatbot_security.xml",
         "security/ir.model.access.csv",
