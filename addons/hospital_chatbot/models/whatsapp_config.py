@@ -162,7 +162,7 @@ class HospitalChatbotWhatsappPhone(models.Model):
                 json={
                     "name": "odoo-hospital",
                     "webhookUrl": f"{odoo_base_url}/chatbot/webhook/incoming/",
-                    "webhookSecret": webhook_secret if webhook_secret != "change-me-in-production" else "",
+                    "webhookSecret": webhook_secret,
                     "phones": all_phones,
                 },
                 timeout=10,
