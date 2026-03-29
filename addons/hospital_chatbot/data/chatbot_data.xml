@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo>
+<odoo noupdate="1">
     <!-- Webhook secret config parameter -->
     <record id="chatbot_webhook_secret" model="ir.config_parameter">
         <field name="key">hospital_chatbot.webhook_secret</field>
