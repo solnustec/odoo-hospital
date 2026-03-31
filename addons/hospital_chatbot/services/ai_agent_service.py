@@ -379,15 +379,26 @@ class AIAgentService:
         lang_code = (
             lang_override
             or ConversationContextManager.get_language(session)
-            or detect_language_from_phone(session.phone_number)
             or "es"
         )
-        lang_name = _LANG_NAMES.get(lang_code, "Spanish")
-        lang_directive = (
-            f"LANGUAGE: You MUST respond EXCLUSIVELY in {lang_name}. "
-            f"NEVER mix languages. Translate tool output to {lang_name}. "
-            f"Every word must be in {lang_name}."
-        )
+        _LANG_DIRECTIVES = {
+            "es": (
+                "IDIOMA: DEBES responder EXCLUSIVAMENTE en español. "
+                "NUNCA mezcles idiomas. Traduce toda salida de herramientas al español. "
+                "Cada palabra debe estar en español."
+            ),
+            "pt": (
+                "IDIOMA: Você DEVE responder EXCLUSIVAMENTE em português. "
+                "NUNCA misture idiomas. Traduza toda saída de ferramentas para português. "
+                "Cada palavra deve estar em português."
+            ),
+            "en": (
+                "LANGUAGE: You MUST respond EXCLUSIVELY in English. "
+                "NEVER mix languages. Translate tool output to English. "
+                "Every word must be in English."
+            ),
+        }
+        lang_directive = _LANG_DIRECTIVES.get(lang_code, _LANG_DIRECTIVES["es"])
 
         personality = SystemPromptBuilder.build_personality_directive(
             emotion=self.chatbot.ai_emotion or "neutral",
