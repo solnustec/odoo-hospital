@@ -350,9 +350,16 @@ class AIAgentService:
     @staticmethod
     def _resolve_option(user_input: str, options: list[dict]) -> str | None:
         user_input = user_input.strip()
+        user_lower = user_input.lower()
+        # Match by button ID (e.g., "opt_1", "book")
         for opt in options:
             if opt["id"] == user_input:
                 return opt["label"]
+        # Match by label text (WhatsApp may send the label instead of ID)
+        for opt in options:
+            if opt["label"].lower() == user_lower:
+                return opt["label"]
+        # Match by number (user types "1", "2", etc.)
         if user_input.isdigit():
             idx = int(user_input) - 1
             if 0 <= idx < len(options):
