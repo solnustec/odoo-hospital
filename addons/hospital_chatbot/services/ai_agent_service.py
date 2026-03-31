@@ -73,7 +73,12 @@ class AIAgentService:
         if user_info:
             ConversationContextManager.set_patient_id(session, user_info["id"])
 
-        lang = detect_language_from_phone(session.phone_number) or "es"
+        company_country = (
+            self.env["res.company"].sudo().browse(self.chatbot.company_id.id or 1).country_id.code or ""
+        )
+        country_lang = {"EC": "es", "CO": "es", "PE": "es", "CL": "es", "AR": "es",
+                        "MX": "es", "ES": "es", "BR": "pt", "PT": "pt", "US": "en", "GB": "en"}
+        lang = country_lang.get(company_country) or detect_language_from_phone(session.phone_number) or "es"
         ConversationContextManager.set_language(session, lang)
         lang_name = _LANG_NAMES.get(lang, "Spanish")
 
