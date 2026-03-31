@@ -179,13 +179,14 @@ class SystemPromptBuilder:
         now = datetime.now(pytz.timezone("America/Guayaquil"))
         date_str = now.strftime("%Y-%m-%d %H:%M (%A)")
 
-        parts = [
-            f"You are a virtual assistant for '{chatbot_name}' hospital.",
-        ]
+        parts = []
 
+        # Language directive FIRST — strongest position
         if language_directive:
-            parts.append("")
             parts.append(language_directive)
+            parts.append("")
+
+        parts.append(f"You are a virtual assistant for '{chatbot_name}' hospital.")
 
         if personality_directive:
             parts.append("")
@@ -328,6 +329,11 @@ class SystemPromptBuilder:
             parts.append("")
             parts.append("ADDITIONAL INSTRUCTIONS:")
             parts.append(custom_prompt)
+
+        # Reinforce language at the end
+        if language_directive:
+            parts.append("")
+            parts.append(f"REMINDER: {language_directive}")
 
         return "\n".join(parts)
 
