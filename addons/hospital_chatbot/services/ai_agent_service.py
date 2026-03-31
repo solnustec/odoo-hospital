@@ -141,11 +141,7 @@ class AIAgentService:
 
     def process_message(self, session, user_message: str) -> list[dict]:
         """Processes a user message in AI mode with tool calling loop."""
-        lang = (
-            ConversationContextManager.get_language(session)
-            or detect_language_from_phone(session.phone_number)
-            or "es"
-        )
+        lang = ConversationContextManager.get_language(session) or "es"
 
         # Exit heuristic
         if _EXIT_PATTERNS.match(user_message.strip()):
@@ -167,12 +163,6 @@ class AIAgentService:
             ConversationContextManager.clear_last_options(session)
 
         ConversationContextManager.append_user_message(session, user_message)
-
-        # Language detection
-        detected_lang = detect_language(user_message, current_lang=lang)
-        if detected_lang:
-            lang = detected_lang
-            ConversationContextManager.set_language(session, lang)
 
         system_prompt = self._build_system_prompt(session, lang_override=lang)
         history = ConversationContextManager.get_history(session)
