@@ -137,7 +137,11 @@ class AIAgentService:
         ConversationContextManager.set_last_options(session, buttons)
 
         delay = estimate_typing_delay(response_text)
-        return [build_buttons_response(response_text, buttons, typing_delay_ms=delay)]
+        return [build_buttons_response(
+            response_text, buttons, typing_delay_ms=delay,
+            button_title=self.chatbot.name,
+            button_footer=get_ui_text("select_option", lang),
+        )]
 
     def process_message(self, session, user_message: str) -> list[dict]:
         """Processes a user message in AI mode with tool calling loop."""
@@ -296,7 +300,11 @@ class AIAgentService:
             ConversationContextManager.set_last_options(session, options)
 
             if len(options) <= 3:
-                responses.append(build_buttons_response(prompt, options, estimate_typing_delay(prompt)))
+                responses.append(build_buttons_response(
+                    prompt, options, estimate_typing_delay(prompt),
+                    button_title=self.chatbot.name,
+                    button_footer=get_ui_text("select_option", lang),
+                ))
             else:
                 rows = [{"id": opt["id"], "title": opt["label"]} for opt in options]
                 sections = [{"title": get_ui_text("view_options", lang), "rows": rows}]

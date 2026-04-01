@@ -19,6 +19,8 @@ def build_buttons_response(
     text: str,
     buttons: list[dict],
     typing_delay_ms: int = 0,
+    button_title: str = "",
+    button_footer: str = "",
 ) -> dict:
     """WhatsApp buttons message (max 3 buttons).
 
@@ -26,12 +28,18 @@ def build_buttons_response(
         text: Header/body text for the message.
         buttons: List of dicts with "id" and "label" keys.
         typing_delay_ms: Simulated typing delay in milliseconds.
+        button_title: Title shown above the message (iOS compatibility).
+        button_footer: Footer shown below the buttons (iOS compatibility).
     """
     resp = {
         "type": "buttons",
         "content": text,
         "buttons": buttons[:3],
     }
+    if button_title:
+        resp["button_title"] = button_title
+    if button_footer:
+        resp["button_footer"] = button_footer
     if typing_delay_ms > 0:
         resp["metadata"] = {"typing_delay_ms": typing_delay_ms}
     return resp
