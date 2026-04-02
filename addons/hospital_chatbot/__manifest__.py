@@ -16,6 +16,8 @@
         "security/ir.model.access.csv",
         "data/chatbot_data.xml",
         "data/chatbot_cron.xml",
+        "views/res_config_settings_views.xml",
+        "views/ai_audit_views.xml",
         "views/menu.xml",
         "views/flow_views.xml",
         "views/node_views.xml",
@@ -28,9 +30,13 @@
     ],
     "assets": {
         "web.assets_backend": [
+            "hospital_chatbot/static/lib/socket.io/socket.io.min.js",
             "hospital_chatbot/static/src/js/flow_builder.js",
+            "hospital_chatbot/static/src/js/whatsapp_qr.js",
             "hospital_chatbot/static/src/xml/flow_builder.xml",
+            "hospital_chatbot/static/src/xml/whatsapp_qr.xml",
             "hospital_chatbot/static/src/css/flow_builder.css",
+            "hospital_chatbot/static/src/css/whatsapp_qr.css",
         ],
     },
     "license": "LGPL-3",

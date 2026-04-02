@@ -25,3 +25,7 @@ access_ai_token_daily_user,hospital.chatbot.ai.token.daily.user,model_hospital_c
 access_ai_token_daily_manager,hospital.chatbot.ai.token.daily.manager,model_hospital_chatbot_ai_token_daily,group_chatbot_manager,1,1,1,1
 access_test_wizard_manager,hospital.chatbot.test.wizard.manager,model_hospital_chatbot_test_wizard,group_chatbot_manager,1,1,1,1
 access_qr_wizard_manager,hospital.chatbot.whatsapp.qr.wizard.manager,model_hospital_chatbot_whatsapp_qr_wizard,group_chatbot_manager,1,1,1,1
+access_ai_pending_action_user,hospital.chatbot.ai.pending.action.user,model_hospital_chatbot_ai_pending_action,group_chatbot_user,1,0,0,0
+access_ai_pending_action_manager,hospital.chatbot.ai.pending.action.manager,model_hospital_chatbot_ai_pending_action,group_chatbot_manager,1,1,1,1
+access_ai_audit_log_user,hospital.chatbot.ai.audit.log.user,model_hospital_chatbot_ai_audit_log,group_chatbot_user,1,0,0,0
+access_ai_audit_log_manager,hospital.chatbot.ai.audit.log.manager,model_hospital_chatbot_ai_audit_log,group_chatbot_manager,1,1,1,1

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Audit Log Tree View -->
+    <record id="hospital_chatbot_ai_audit_log_view_tree" model="ir.ui.view">
+        <field name="name">hospital.chatbot.ai.audit.log.tree</field>
+        <field name="model">hospital.chatbot.ai.audit.log</field>
+        <field name="arch" type="xml">
+            <tree string="Auditoría IA"
+                  decoration-warning="is_write_operation and not was_confirmed"
+                  decoration-success="was_confirmed"
+                  default_order="timestamp desc">
+                <field name="timestamp"/>
+                <field name="phone_number"/>
+                <field name="tool_name"/>
+                <field name="is_write_operation" widget="boolean"/>
+                <field name="was_confirmed" widget="boolean"/>
+                <field name="confirmation_token" optional="hide"/>
+                <field name="chatbot_id" optional="hide"/>
+                <field name="session_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Audit Log Form View -->
+    <record id="hospital_chatbot_ai_audit_log_view_form" model="ir.ui.view">
+        <field name="name">hospital.chatbot.ai.audit.log.form</field>
+        <field name="model">hospital.chatbot.ai.audit.log</field>
+        <field name="arch" type="xml">
+            <form string="Detalle de Auditoría IA" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="timestamp"/>
+                            <field name="phone_number"/>
+                            <field name="tool_name"/>
+                            <field name="session_id"/>
+                            <field name="chatbot_id"/>
+                        </group>
+                        <group>
+                            <field name="is_write_operation" widget="boolean"/>
+                            <field name="was_confirmed" widget="boolean"/>
+                            <field name="confirmation_token"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Argumentos">
+                            <field name="tool_args" widget="json"/>
+                        </page>
+                        <page string="Resultado">
+                            <field name="tool_result" widget="json"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Audit Log Action -->
+    <record id="action_chatbot_ai_audit_log" model="ir.actions.act_window">
+        <field name="name">Auditoría IA</field>
+        <field name="res_model">hospital.chatbot.ai.audit.log</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu Item under Reports -->
+    <menuitem id="chatbot_menu_ai_audit_log"
+              name="Auditoría IA"
+              parent="chatbot_menu_reports"
+              action="action_chatbot_ai_audit_log"
+              sequence="30"/>
+
+    <!-- Pending Actions Tree View -->
+    <record id="hospital_chatbot_ai_pending_action_view_tree" model="ir.ui.view">
+        <field name="name">hospital.chatbot.ai.pending.action.tree</field>
+        <field name="model">hospital.chatbot.ai.pending.action</field>
+        <field name="arch" type="xml">
+            <tree string="Acciones Pendientes"
+                  decoration-warning="status == 'pending'"
+                  decoration-success="status == 'confirmed'"
+                  decoration-muted="status in ('expired', 'rejected')"
+                  default_order="create_date desc">
+                <field name="create_date"/>
+                <field name="token"/>
+                <field name="tool_name"/>
+                <field name="summary"/>
+                <field name="status" widget="badge"
+                       decoration-warning="status == 'pending'"
+                       decoration-success="status == 'confirmed'"
+                       decoration-danger="status in ('expired', 'rejected')"/>
+                <field name="expires_at"/>
+                <field name="executed_at"/>
+                <field name="session_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Pending Actions Action -->
+    <record id="action_chatbot_ai_pending_actions" model="ir.actions.act_window">
+        <field name="name">Acciones Pendientes IA</field>
+        <field name="res_model">hospital.chatbot.ai.pending.action</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <!-- Menu Item under Reports -->
+    <menuitem id="chatbot_menu_ai_pending_actions"
+              name="Acciones Pendientes IA"
+              parent="chatbot_menu_reports"
+              action="action_chatbot_ai_pending_actions"
+              sequence="35"/>
+</odoo>

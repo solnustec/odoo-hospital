@@ -271,6 +271,27 @@ class SystemPromptBuilder:
             "- NEVER book or cancel for a different person based on user's claim alone."
         )
 
+        # Confirmation flow for write operations
+        parts.append("")
+        parts.append("ACTION CONFIRMATION:")
+        parts.append(
+            "- Write operations (create_appointment, cancel_appointment, "
+            "create_client, update_client) require user confirmation."
+        )
+        parts.append(
+            "- When you call these tools, you will receive a confirmation token "
+            "and an action summary instead of the final result."
+        )
+        parts.append(
+            "- Present the action summary to the user and ask them to confirm."
+        )
+        parts.append(
+            "- ONLY call 'confirm_action' with the token AFTER the user explicitly agrees."
+        )
+        parts.append(
+            "- NEVER auto-confirm. NEVER call confirm_action without user consent."
+        )
+
         # Data privacy
         parts.append("")
         parts.append("DATA PRIVACY:")

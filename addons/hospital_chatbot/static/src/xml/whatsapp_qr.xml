@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="hospital_chatbot.WhatsappQr">
+        <div class="whatsapp-qr-overlay d-flex align-items-center justify-content-center"
+             style="min-height: 500px;">
+            <div class="whatsapp-qr-container text-center p-4" style="max-width: 460px; width: 100%;">
+
+                <!-- Header -->
+                <div class="whatsapp-qr-header mb-3">
+                    <i class="fa fa-whatsapp fa-2x" style="color: #25d366;"/>
+                    <h4 class="mt-2 mb-0">Vincular WhatsApp</h4>
+                    <p class="text-muted mt-1 mb-0">
+                        <i class="fa fa-phone me-1"/>
+                        <t t-esc="'+' + state.phoneNumber"/>
+                    </p>
+                </div>
+
+                <!-- Loading / Connecting state -->
+                <div t-if="state.status === 'idle' or state.status === 'connecting'" class="my-5">
+                    <i class="fa fa-spinner fa-spin fa-3x text-primary"/>
+                    <p class="mt-3 text-muted" t-esc="state.statusMessage || 'Preparando conexión...'"/>
+                </div>
+
+                <!-- QR code display -->
+                <div t-if="state.status === 'qr_ready'" class="my-3">
+                    <div class="whatsapp-qr-image d-inline-block p-3 bg-white border rounded shadow-sm">
+                        <img t-att-src="state.qrImageSrc" alt="Código QR"
+                             style="width: 280px; height: 280px; image-rendering: pixelated;"/>
+                    </div>
+                    <div class="whatsapp-qr-instructions mt-3 text-start mx-auto"
+                         style="max-width: 340px;">
+                        <p class="fw-bold mb-2">Para vincular su WhatsApp:</p>
+                        <ol class="small text-muted">
+                            <li>Abra WhatsApp en su teléfono</li>
+                            <li>Toque <b>Menú</b> o <b>Ajustes</b></li>
+                            <li>Seleccione <b>Dispositivos vinculados</b></li>
+                            <li>Toque <b>Vincular un dispositivo</b></li>
+                            <li>Escanee este código QR</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Saving state (scanned, writing to DB) -->
+                <div t-if="state.status === 'saving'" class="my-5">
+                    <i class="fa fa-check-circle fa-3x text-success"/>
+                    <p class="mt-3 fw-bold text-success">¡QR escaneado correctamente!</p>
+                    <p class="text-muted">
+                        <i class="fa fa-spinner fa-spin me-1"/>
+                        Guardando sesión...
+                    </p>
+                </div>
+
+                <!-- Connected state (saved, about to reload) -->
+                <div t-if="state.status === 'connected'" class="my-5">
+                    <i class="fa fa-check-circle fa-3x text-success"/>
+                    <p class="mt-3 fw-bold text-success" t-esc="state.statusMessage"/>
+                    <p class="text-muted small">Recargando página...</p>
+                </div>
+
+                <!-- Error state -->
+                <div t-if="state.status === 'error'" class="my-5">
+                    <i class="fa fa-exclamation-triangle fa-3x text-danger"/>
+                    <p class="mt-3 text-danger" t-esc="state.statusMessage"/>
+                    <p t-if="state.errorDetail" class="text-muted small"
+                       t-esc="state.errorDetail"/>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="whatsapp-qr-actions mt-4">
+                    <button t-if="state.status === 'error'"
+                            class="btn btn-primary me-2"
+                            t-on-click="onRetry">
+                        <i class="fa fa-refresh me-1"/> Reintentar
+                    </button>
+                    <button t-if="state.status !== 'connected' and state.status !== 'saving'"
+                            class="btn btn-secondary"
+                            t-on-click="onCancel">
+                        <i class="fa fa-times me-1"/> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

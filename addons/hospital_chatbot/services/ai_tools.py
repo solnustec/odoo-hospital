@@ -15,6 +15,9 @@ import pytz
 
 _logger = logging.getLogger(__name__)
 
+# Tools that modify the database and require user confirmation
+WRITE_TOOLS = {"create_appointment", "cancel_appointment", "create_client", "update_client"}
+
 # ============================================================
 # Tool declarations for Gemini function calling
 # ============================================================
@@ -200,6 +203,24 @@ TOOL_DECLARATIONS = [
         },
     },
     {
+        "name": "confirm_action",
+        "description": (
+            "Confirm and execute a previously proposed write action using its "
+            "confirmation token. ONLY call this AFTER the user has explicitly "
+            "agreed to the action. The token was returned by the original tool call."
+        ),
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "token": {
+                    "type": "STRING",
+                    "description": "The confirmation token provided when the action was proposed",
+                },
+            },
+            "required": ["token"],
+        },
+    },
+    {
         "name": "end_ai_conversation",
         "description": (
             "End AI mode and return to the chatbot menu. "
@@ -247,16 +268,18 @@ def build_rest_tools() -> list[dict]:
 class ToolRegistry:
     """Executes tools based on Gemini function calls using Odoo ORM."""
 
-    def __init__(self, env, chatbot, user_phone: str):
+    def __init__(self, env, chatbot, user_phone: str, session=None):
         """
         Args:
             env: Odoo environment with user=1 (sudo).
             chatbot: hospital.chatbot record.
             user_phone: WhatsApp phone of the user.
+            session: hospital.chatbot.session record (for security token flow).
         """
         self.env = env
         self.chatbot = chatbot
         self.user_phone = user_phone
+        self.session = session
 
     def _verify_phone_match(self, phone: str) -> bool:
         if not phone or not self.user_phone:
@@ -265,16 +288,79 @@ class ToolRegistry:
         clean_other = re.sub(r"[^\d]", "", str(phone))
         return clean_user[-8:] == clean_other[-8:]
 
+    def _log_audit(self, tool_name, args, result, is_write=False, was_confirmed=False, token=""):
+        from odoo.addons.hospital_chatbot.models.ai_audit_log import HospitalChatbotAIAuditLog
+        try:
+            HospitalChatbotAIAuditLog.log_tool_call(
+                self.env, self.session, self.chatbot,
+                tool_name, args, result,
+                is_write=is_write, was_confirmed=was_confirmed, token=token,
+            )
+        except Exception as e:
+            _logger.error("Failed to log audit: %s", e)
+
+    def _build_action_summary(self, tool_name: str, args: dict) -> str:
+        """Build a human-readable summary of the proposed action."""
+        if tool_name == "create_appointment":
+            doctor = self.env["hr.employee"].browse(args.get("doctor_id", 0))
+            service = self.env["product.product"].browse(args.get("service_id", 0))
+            return (
+                f"Crear cita: {args.get('full_name', '?')} con "
+                f"{doctor.name if doctor.exists() else '?'} — "
+                f"{service.name if service.exists() else '?'} el "
+                f"{args.get('date', '?')} a las {args.get('time', '?')}"
+            )
+        if tool_name == "cancel_appointment":
+            return f"Cancelar cita #{args.get('appointment_id', '?')}"
+        if tool_name == "create_client":
+            return f"Registrar paciente: {args.get('full_name', '?')}"
+        if tool_name == "update_client":
+            fields_updated = [k for k in ("full_name", "email") if args.get(k)]
+            return f"Actualizar paciente ({', '.join(fields_updated or ['?'])})"
+        return f"{tool_name}({args})"
+
     def execute(self, tool_name: str, args: dict) -> dict:
+        is_write = tool_name in WRITE_TOOLS
+
+        # Write tools require confirmation via token
+        if is_write and self.session:
+            return self._create_pending_action(tool_name, args)
+
         handler = getattr(self, f"_tool_{tool_name}", None)
         if not handler:
             return {"error": f"Tool '{tool_name}' not found"}
         try:
             result = handler(**args)
-            return self._make_json_safe(result)
+            result = self._make_json_safe(result)
+            self._log_audit(tool_name, args, result, is_write=False)
+            return result
         except Exception as e:
             _logger.error("Error executing tool %s: %s", tool_name, e, exc_info=True)
             return {"error": str(e)}
+
+    def _create_pending_action(self, tool_name: str, args: dict) -> dict:
+        """Create a pending action that requires user confirmation."""
+        from odoo.addons.hospital_chatbot.models.ai_pending_action import HospitalChatbotAIPendingAction
+
+        summary = self._build_action_summary(tool_name, args)
+        pending = HospitalChatbotAIPendingAction.create_pending(
+            self.env, self.session, tool_name, args, summary=summary,
+        )
+        _logger.info(
+            "Created pending action: %s (token=%s, session=%s)",
+            tool_name, pending.token, self.session.id,
+        )
+        self._log_audit(tool_name, args, {"pending_confirmation": True, "token": pending.token}, is_write=True)
+        return {
+            "pending_confirmation": True,
+            "token": pending.token,
+            "action_summary": summary,
+            "message": (
+                "This action requires user confirmation. Present the summary "
+                "to the user and ask them to confirm. Only call confirm_action "
+                "with the token after the user explicitly agrees."
+            ),
+        }
 
     @staticmethod
     def _make_json_safe(obj):
@@ -642,6 +728,47 @@ class ToolRegistry:
 
         partner.write(update_vals)
         return {"success": True, "client_id": partner.id, "updated_fields": list(update_vals.keys())}
+
+    # =====================
+    # Confirmation
+    # =====================
+
+    def _tool_confirm_action(self, token: str) -> dict:
+        """Validate a confirmation token and execute the pending action."""
+        from odoo.addons.hospital_chatbot.models.ai_pending_action import HospitalChatbotAIPendingAction
+
+        if not self.session:
+            return {"error": "No active session for confirmation."}
+
+        pending = HospitalChatbotAIPendingAction.find_by_token(
+            self.env, self.session, token,
+        )
+        if not pending:
+            return {"error": "Invalid or expired confirmation token."}
+
+        if pending.is_expired():
+            pending.mark_expired()
+            return {"error": "Confirmation token has expired. Please start the action again."}
+
+        # Execute the original tool
+        handler = getattr(self, f"_tool_{pending.tool_name}", None)
+        if not handler:
+            pending.mark_rejected()
+            return {"error": f"Tool '{pending.tool_name}' not found."}
+
+        try:
+            result = handler(**(pending.tool_args or {}))
+            result = self._make_json_safe(result)
+            pending.mark_confirmed(result)
+            self._log_audit(
+                pending.tool_name, pending.tool_args or {}, result,
+                is_write=True, was_confirmed=True, token=token,
+            )
+            return result
+        except Exception as e:
+            _logger.error("Error executing confirmed action %s: %s", pending.tool_name, e, exc_info=True)
+            pending.mark_rejected()
+            return {"error": str(e)}
 
     # =====================
     # Control

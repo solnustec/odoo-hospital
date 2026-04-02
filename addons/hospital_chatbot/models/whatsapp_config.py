@@ -56,6 +56,17 @@ class HospitalChatbotWhatsappPhone(models.Model):
             _logger.warning("Failed to check session status: %s", e)
             self.write({"session_status": "unknown"})
 
+    def action_save_qr_session(self, whatsapp_id=""):
+        """Called from WebSocket QR component after successful scan.
+        Saves session state and starts the chatbot listener."""
+        self.ensure_one()
+        vals = {"session_status": "connected"}
+        if whatsapp_id:
+            vals["whatsapp_id"] = whatsapp_id
+        self.write(vals)
+        self.action_connect_session()
+        return True
+
     def action_connect_session(self):
         """Start a chatbot session on the WhatsApp service."""
         self.ensure_one()
@@ -103,16 +114,16 @@ class HospitalChatbotWhatsappPhone(models.Model):
             _logger.warning("Failed to stop session: %s", e)
 
     def action_get_qr(self):
-        """Open QR wizard to authenticate a new WhatsApp session."""
+        """Open WebSocket-based QR dialog to authenticate a new WhatsApp session."""
         self.ensure_one()
-        wa_url = self._get_whatsapp_service_url()
+        wa_url = self._get_whatsapp_login_url()
         if not wa_url:
             return {
                 "type": "ir.actions.client",
                 "tag": "display_notification",
                 "params": {
                     "title": "Error",
-                    "message": "URL del servicio WhatsApp no configurada. Vaya a Ajustes → Parámetros del sistema → hospital_chatbot.whatsapp_service_url",
+                    "message": "URL del servicio WhatsApp no configurada. Vaya a Chatbot → Configuración → Ajustes.",
                     "type": "danger",
                 },
             }
@@ -120,20 +131,14 @@ class HospitalChatbotWhatsappPhone(models.Model):
         # Register backend first
         self._register_backend()
 
-        # Create wizard and request QR
-        wizard = self.env["hospital.chatbot.whatsapp.qr.wizard"].create({
-            "phone_number": self.phone_number,
-            "whatsapp_phone_id": self.id,
-            "status_message": "Solicitando código QR...",
-        })
-        wizard.action_refresh_qr()
-
         return {
-            "type": "ir.actions.act_window",
-            "res_model": "hospital.chatbot.whatsapp.qr.wizard",
-            "res_id": wizard.id,
-            "views": [[False, "form"]],
+            "type": "ir.actions.client",
+            "tag": "hospital_chatbot.whatsapp_qr",
             "target": "new",
+            "context": {
+                "phone_number": self.phone_number,
+                "phone_id": self.id,
+            },
         }
 
     def _register_backend(self):

@@ -26,4 +26,12 @@
               parent="chatbot_menu_root"
               groups="hospital_chatbot.group_chatbot_manager"
               sequence="30"/>
+
+    <!-- Settings -->
+    <menuitem id="chatbot_menu_settings"
+              name="Ajustes"
+              parent="chatbot_menu_config"
+              action="action_chatbot_config_settings"
+              groups="hospital_chatbot.group_chatbot_manager"
+              sequence="99"/>
 </odoo>

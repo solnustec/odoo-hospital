@@ -24,6 +24,18 @@
         <field name="active">True</field>
     </record>
 
+    <!-- Expire pending AI actions cron -->
+    <record id="ir_cron_chatbot_expire_pending_actions" model="ir.cron">
+        <field name="name">Chatbot: Expirar acciones pendientes IA</field>
+        <field name="model_id" ref="model_hospital_chatbot_ai_pending_action"/>
+        <field name="state">code</field>
+        <field name="code">env['hospital.chatbot.ai.pending.action'].search([('status', '=', 'pending'), ('expires_at', '&lt;', datetime.datetime.now())]).write({'status': 'expired'})</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+
     <!-- Appointment reminder cron -->
     <record id="ir_cron_chatbot_appointment_reminders" model="ir.cron">
         <field name="name">Chatbot: Enviar recordatorios de citas</field>

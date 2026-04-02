@@ -168,7 +168,7 @@ class AIAgentService:
         history = ConversationContextManager.get_history(session)
 
         sudo_env = self.env(user=1)
-        tool_registry = ToolRegistry(sudo_env, self.chatbot, session.phone_number)
+        tool_registry = ToolRegistry(sudo_env, self.chatbot, session.phone_number, session=session)
 
         total_input = 0
         total_output = 0

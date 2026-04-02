@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.hospital.chatbot</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Chatbot" string="Chatbot" name="hospital_chatbot">
+                    <block title="Inteligencia Artificial" name="chatbot_ai_settings">
+                        <setting string="Gemini API Key"
+                                 help="Clave de API del servicio Google Gemini para el agente de IA">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="chatbot_gemini_api_key" class="col-lg-3 o_light_label"/>
+                                    <field name="chatbot_gemini_api_key" password="True"
+                                           placeholder="AIzaSy..."/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Servicio WhatsApp" name="chatbot_whatsapp_settings">
+                        <setting string="URL Principal"
+                                 help="URL base del microservicio de WhatsApp (chatbot listener)">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="chatbot_whatsapp_service_url" class="col-lg-3 o_light_label"/>
+                                    <field name="chatbot_whatsapp_service_url"
+                                           placeholder="https://apiwhatsapp.example.com"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting string="URL de Login (QR)"
+                                 help="URL del servicio de login/QR. Dejar vacío para usar la URL principal.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="chatbot_whatsapp_login_url" class="col-lg-3 o_light_label"/>
+                                    <field name="chatbot_whatsapp_login_url"
+                                           placeholder="Dejar vacío para usar URL principal"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting string="URL de Verificación"
+                                 help="URL del servicio de verificación de sesión. Dejar vacío para usar la URL principal.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="chatbot_whatsapp_check_url" class="col-lg-3 o_light_label"/>
+                                    <field name="chatbot_whatsapp_check_url"
+                                           placeholder="Dejar vacío para usar URL principal"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Seguridad" name="chatbot_security_settings">
+                        <setting string="Webhook Secret"
+                                 help="Token secreto compartido para autenticar los webhooks entrantes del servicio WhatsApp">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="chatbot_webhook_secret" class="col-lg-3 o_light_label"/>
+                                    <field name="chatbot_webhook_secret" password="True"
+                                           placeholder="Ingrese un secreto seguro"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action to open chatbot settings directly -->
+    <record id="action_chatbot_config_settings" model="ir.actions.act_window">
+        <field name="name">Ajustes del Chatbot</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'hospital_chatbot'}</field>
+    </record>
+</odoo>

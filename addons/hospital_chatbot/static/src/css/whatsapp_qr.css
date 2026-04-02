@@ -1,0 +1,24 @@
+.whatsapp-qr-overlay {
+    background-color: #f8f9fa;
+}
+
+.whatsapp-qr-header .fa-whatsapp {
+    color: #25d366;
+}
+
+.whatsapp-qr-image img {
+    border-radius: 8px;
+}
+
+.whatsapp-qr-instructions ol li {
+    margin-bottom: 4px;
+}
+
+@keyframes whatsapp-qr-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.whatsapp-qr-overlay .fa-spinner {
+    animation: fa-spin 1s linear infinite;
+}

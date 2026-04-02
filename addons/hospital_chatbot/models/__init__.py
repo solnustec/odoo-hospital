@@ -4,3 +4,6 @@ from . import resources
 from . import ai_token_usage
 from . import whatsapp_phone
 from . import whatsapp_config
+from . import res_config_settings
+from . import ai_pending_action
+from . import ai_audit_log
