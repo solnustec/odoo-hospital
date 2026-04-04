@@ -38,6 +38,7 @@
                        decoration-danger="appointment_status in ('cancelled', 'no_show')"/>
                 <field name="appointment_origin" optional="hide"/>
                 <field name="patient_phone" optional="hide"/>
+                <field name="invoice_id" string="Factura" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -68,10 +69,26 @@
                     <button name="action_reset_draft" type="object"
                             string="Reabrir" class="btn-secondary"
                             invisible="appointment_status not in ('cancelled', 'no_show')"/>
+                    <button name="action_create_invoice" type="object"
+                            string="Facturar" class="btn-primary"
+                            icon="fa-file-text-o"
+                            invisible="appointment_status != 'done' or invoice_id"/>
                     <field name="appointment_status" widget="statusbar"
                            statusbar_visible="draft,confirmed,in_progress,done"/>
                 </header>
                 <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button name="action_view_invoice" type="object"
+                                class="oe_stat_button" icon="fa-pencil-square-o"
+                                invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="amount_total" widget="monetary"/>
+                                </span>
+                                <span class="o_stat_text">Factura</span>
+                            </div>
+                        </button>
+                    </div>
                     <group>
                         <group string="Cita">
                             <field name="start"/>
@@ -94,6 +111,8 @@
                         <field name="cancellation_reason"/>
                     </group>
                     <field name="is_appointment" invisible="1"/>
+                    <field name="invoice_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
                 </sheet>
             </form>
         </field>
@@ -149,6 +168,11 @@
                         domain="[('appointment_status', '=', 'done')]"/>
                 <filter name="cancelled" string="Canceladas"
                         domain="[('appointment_status', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="invoiced" string="Facturadas"
+                        domain="[('invoice_id', '!=', False)]"/>
+                <filter name="not_invoiced" string="Sin factura"
+                        domain="[('invoice_id', '=', False), ('appointment_status', '=', 'done')]"/>
                 <group expand="0" string="Agrupar por">
                     <filter name="group_doctor" string="Médico"
                             context="{'group_by': 'doctor_id'}"/>
@@ -168,6 +192,14 @@
         <field name="view_mode">calendar,tree,form,kanban</field>
         <field name="domain">[('is_appointment', '=', True)]</field>
         <field name="context">{'default_is_appointment': True, 'search_default_is_appointment': 1, 'search_default_upcoming': 1}</field>
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'calendar', 'view_id': ref('view_appointment_calendar')}),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_appointment_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_appointment_form')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_appointment_kanban')}),
+        ]"/>
+        <field name="search_view_id" ref="view_appointment_search"/>
     </record>
 
     <record id="action_appointment_list" model="ir.actions.act_window">
@@ -176,5 +208,13 @@
         <field name="view_mode">tree,form,calendar,kanban</field>
         <field name="domain">[('is_appointment', '=', True)]</field>
         <field name="context">{'default_is_appointment': True, 'search_default_is_appointment': 1}</field>
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_appointment_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_appointment_form')}),
+            (0, 0, {'view_mode': 'calendar', 'view_id': ref('view_appointment_calendar')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_appointment_kanban')}),
+        ]"/>
+        <field name="search_view_id" ref="view_appointment_search"/>
     </record>
 </odoo>

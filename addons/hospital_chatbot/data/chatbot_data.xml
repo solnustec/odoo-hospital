@@ -18,19 +18,17 @@
             <field name="key">hospital_chatbot.whatsapp_service_url</field>
             <field name="value">https://apiwhatsapp.solnustec.com</field>
         </record>
-    </data>
 
-    <data noupdate="0">
-        <!-- WhatsApp login URL (loginqr, port 3100) -->
+        <!-- WhatsApp login URL (loginqr, port 3100) — set per environment via Settings -->
         <record id="chatbot_whatsapp_login_url" model="ir.config_parameter">
             <field name="key">hospital_chatbot.whatsapp_login_url</field>
-            <field name="value">http://localhost:3100</field>
+            <field name="value">https://apiwhatsapp.solnustec.com</field>
         </record>
 
-        <!-- WhatsApp check session URL (check_session, port 3400) -->
+        <!-- WhatsApp check session URL (check_session, port 3400) — set per environment via Settings -->
         <record id="chatbot_whatsapp_check_url" model="ir.config_parameter">
             <field name="key">hospital_chatbot.whatsapp_check_url</field>
-            <field name="value">http://localhost:3400</field>
+            <field name="value">https://apiwhatsapp.solnustec.com</field>
         </record>
     </data>
 </odoo>

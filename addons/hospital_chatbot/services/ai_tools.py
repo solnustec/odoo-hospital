@@ -542,6 +542,12 @@ class ToolRegistry:
         service = self.env["product.product"].browse(service_id)
         if not service.exists():
             return {"error": "Service not found"}
+        medical_categ = self.env.ref(
+            "hospital_booking.product_category_medical_service",
+            raise_if_not_found=False,
+        )
+        if medical_categ and service.categ_id.id != medical_categ.id:
+            return {"error": "Service not found"}
 
         try:
             target_date = datetime.strptime(date, "%Y-%m-%d").date()

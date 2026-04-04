@@ -27,6 +27,9 @@ class HrEmployee(models.Model):
         "employee_id",
         "product_id",
         string="Servicios médicos",
+        domain=lambda self: [
+            ("categ_id", "=", self.env.ref("hospital_booking.product_category_medical_service", raise_if_not_found=False).id or 0),
+        ],
         help="Servicios que este médico ofrece",
     )
     appointment_count = fields.Integer(

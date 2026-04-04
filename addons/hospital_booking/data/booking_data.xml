@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="1">
+<odoo>
+    <data noupdate="0">
+        <!-- Medical services product category ("bodega") -->
+        <record id="product_category_medical_service" model="product.category">
+            <field name="name">Servicios Medicos</field>
+        </record>
+    </data>
+
+    <data noupdate="1">
     <!-- Default booking config for main company -->
     <record id="default_booking_config" model="hospital.booking.config">
         <field name="company_id" ref="base.main_company"/>
@@ -13,4 +21,5 @@
         <field name="max_no_shows_before_block">3</field>
         <field name="free_cancellation_hours">24</field>
     </record>
+    </data>
 </odoo>

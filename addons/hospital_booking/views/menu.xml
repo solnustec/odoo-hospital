@@ -34,6 +34,12 @@
               groups="group_booking_manager"
               sequence="90"/>
 
+    <menuitem id="menu_booking_config_services"
+              name="Servicios Médicos"
+              parent="menu_booking_config"
+              action="action_medical_services"
+              sequence="5"/>
+
     <menuitem id="menu_booking_config_policies"
               name="Políticas de Citas"
               parent="menu_booking_config"

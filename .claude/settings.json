@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /home/pedro/Documentos/solnus/odoo-hospital/addons/hospital_* -name \"*.py\")",
+      "Bash(find /home/pedro/Documentos/solnus/odoo-hospital/addons -name \"__manifest__.py\" -exec grep -l \"depends\" {} \\\\;)",
+      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\" && head -20 {}')",
+      "Bash(grep -r \"Many2one\\\\|Many2many\" /home/pedro/Documentos/solnus/odoo-hospital/addons/hospital_booking/models/*.py)",
+      "Bash(grep -r \"depends.*sale\\\\|depends.*account\" /home/pedro/Documentos/solnus/odoo-hospital/addons/*/\\\\_\\\\_manifest\\\\_\\\\_.py)",
+      "Bash(ls /home/pedro/Documentos/solnus/odoo-hospital/PLAN_*.md)",
+      "Bash(python3 -c 'import xml.etree.ElementTree as ET; ET.parse\\('\\\\''__TRACKED_VAR__'\\\\''\\)')",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\('addons/hospital_chatbot/services/ai_tools.py'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(python3 -c \"import xml.etree.ElementTree as ET; ET.parse\\('addons/hospital_booking/data/booking_demo.xml'\\); print\\('OK'\\)\")",
+      "Bash(docker stop:*)",
+      "Bash(docker run:*)",
+      "Bash(python3 -c \"import xml.etree.ElementTree as ET; ET.parse\\('addons/hospital_booking/data/booking_demo.xml'\\); print\\('XML OK'\\)\")",
+      "Bash(sudo rm:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(docker restart:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8069/web/login)",
+      "Bash(curl -s -c /tmp/odoo_cookies.txt -X POST http://localhost:8069/web/session/authenticate -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"params\":{\"db\":\"produccion\",\"login\":\"admin\",\"password\":\"admin\"}}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('Login:', 'OK' if d.get\\('result',{}\\).get\\('uid'\\) else 'FAIL'\\)\")",
+      "Bash(curl -s -b /tmp/odoo_cookies.txt -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"call\",\"params\":{\"action_id\":476}}' http://localhost:8069/web/action/load)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('Session:', 'OK' if not d.get\\('error'\\) else d['error']['data']['message']\\)\")",
+      "Bash(curl -s -X POST http://localhost:8069/web/session/authenticate -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"params\":{\"db\":\"produccion\",\"login\":\"admin\",\"password\":\"admin\"}}')",
+      "Bash(python3 -c ':*)",
+      "Bash(curl -s -c /tmp/odoo_cookies.txt -X POST http://localhost:8069/web/session/authenticate -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"params\":{\"db\":\"produccion\",\"login\":\"admin\",\"password\":\"@cardioFE2025\"}}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('Login:', 'OK uid=' + str\\(d.get\\('result',{}\\).get\\('uid'\\)\\) if d.get\\('result',{}\\).get\\('uid'\\) else 'FAIL'\\)\")",
+      "Bash(curl -s -b /tmp/odoo_cookies.txt -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":220,\"method\":\"call\",\"params\":{\"model\":\"account.move\",\"method\":\"search_read\",\"args\":[[[\"move_type\",\"=\",\"out_invoice\"]]],\"kwargs\":{\"fields\":[\"name\",\"partner_id\",\"state\",\"amount_total\",\"invoice_line_ids\"],\"limit\":10,\"order\":\"id desc\"}}}' http://localhost:8069/web/dataset/call_kw/account.move/search_read)"
+    ]
+  }
+}

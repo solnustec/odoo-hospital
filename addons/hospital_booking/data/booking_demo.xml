@@ -144,31 +144,37 @@
     <record id="service_general" model="product.template">
         <field name="name">Consulta General</field>
         <field name="type">service</field>
+        <field name="categ_id" ref="product_category_medical_service"/>
         <field name="list_price">35.00</field>
     </record>
     <record id="service_pediatria" model="product.template">
         <field name="name">Consulta Pediátrica</field>
         <field name="type">service</field>
+        <field name="categ_id" ref="product_category_medical_service"/>
         <field name="list_price">40.00</field>
     </record>
     <record id="service_cardiologia" model="product.template">
         <field name="name">Consulta Cardiológica</field>
         <field name="type">service</field>
+        <field name="categ_id" ref="product_category_medical_service"/>
         <field name="list_price">60.00</field>
     </record>
     <record id="service_dermatologia" model="product.template">
         <field name="name">Consulta Dermatológica</field>
         <field name="type">service</field>
+        <field name="categ_id" ref="product_category_medical_service"/>
         <field name="list_price">50.00</field>
     </record>
     <record id="service_ginecologia" model="product.template">
         <field name="name">Consulta Ginecológica</field>
         <field name="type">service</field>
+        <field name="categ_id" ref="product_category_medical_service"/>
         <field name="list_price">55.00</field>
     </record>
     <record id="service_traumatologia" model="product.template">
         <field name="name">Consulta Traumatología</field>
         <field name="type">service</field>
+        <field name="categ_id" ref="product_category_medical_service"/>
         <field name="list_price">50.00</field>
     </record>
 
@@ -308,7 +314,24 @@
         <field name="name">Carlos Ruiz (Frecuente ausente)</field>
         <field name="phone">593984006006</field>
         <field name="email">carlos.ruiz@mail.com</field>
+        <field name="vat">1704567890</field>
         <field name="city">Ambato</field>
+    </record>
+
+    <!-- ======================================= -->
+    <!-- Non-medical product (category test)     -->
+    <!-- ======================================= -->
+
+    <record id="product_insumo_guantes" model="product.template">
+        <field name="name">Guantes quirúrgicos (caja x100)</field>
+        <field name="type">consu</field>
+        <field name="list_price">12.50</field>
+    </record>
+
+    <record id="product_insumo_mascarillas" model="product.template">
+        <field name="name">Mascarillas N95 (caja x50)</field>
+        <field name="type">consu</field>
+        <field name="list_price">25.00</field>
     </record>
 
 </odoo>

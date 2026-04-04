@@ -1,6 +1,6 @@
 {
     "name": "Hospital Booking",
-    "version": "17.0.1.0.0",
+    "version": "17.0.2.0.0",
     "category": "Services",
     "summary": "Appointment booking system for hospital management",
     "description": """
@@ -10,7 +10,8 @@
     """,
     "author": "Solnus",
     "website": "https://www.solnustec.com",
-    "depends": ["base", "hr", "resource", "calendar", "product"],
+    "depends": ["base", "hr", "resource", "calendar", "product", "account"],
+    "post_init_hook": "_post_init_hook",
     "data": [
         "security/booking_security.xml",
         "security/ir.model.access.csv",
@@ -19,6 +20,7 @@
         "views/appointment_views.xml",
         "views/hr_employee_views.xml",
         "views/booking_config_views.xml",
+        "views/medical_service_views.xml",
         "views/menu.xml",
     ],
     "license": "LGPL-3",
