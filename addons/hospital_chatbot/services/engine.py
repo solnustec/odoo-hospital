@@ -381,6 +381,23 @@ class ChatbotEngine:
                 {"id": str(opt.option_number), "label": opt.option_text[:20]}
                 for opt in menu_options
             ]
+
+            # When ai_enabled is True, the database menu only ever
+            # renders as a post-deactivation handoff (in
+            # _process_ai_message). The user's next tap on one of these
+            # buttons sends the numeric option id ('1', '2', ...) which
+            # the engine routes back through _activate_ai_fallback to
+            # the AI agent. Without last_options on the session, the
+            # AI agent receives a bare '1' with no context and
+            # hallucinates. Persist the (id, label) pairs here so
+            # AI agent's _resolve_option can convert the tap back to
+            # its natural-language label on the next turn.
+            from .ai_context import ConversationContextManager
+            ConversationContextManager.set_last_options(session, [
+                {"id": str(opt.option_number), "label": opt.option_text}
+                for opt in menu_options
+            ])
+
             responses = self._paginated_button_responses(
                 session, header or "Seleccione:", buttons
             )

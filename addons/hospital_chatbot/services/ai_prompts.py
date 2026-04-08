@@ -275,7 +275,28 @@ class SystemPromptBuilder:
         parts.append("- Always confirm before creating or cancelling an appointment.")
         parts.append("- Never make up data. Use the tools to look up information.")
         parts.append("- Be concise, this is WhatsApp. Use short lists, not paragraphs.")
-        parts.append("- If the user wants to return to the main menu, use 'end_ai_conversation'.")
+        parts.append(
+            "- RETURN TO MAIN MENU: when the user wants to leave the AI "
+            "conversation, return to the menu, start over, or talk to a "
+            "human agent, you MUST call the 'end_ai_conversation' tool. "
+            "Trigger phrases include: 'menu', 'volver', 'salir', "
+            "'inicio', 'volver al menú principal', 'regresar', 'cancelar', "
+            "'main menu', or any close paraphrase. Do this even if the "
+            "user says it mid-flow (e.g. while picking a service or a "
+            "date) — they have the right to abandon a flow at any time. "
+            "DO NOT confirm before ending; just call the tool."
+        )
+        parts.append(
+            "- NEVER offer 'Volver al menú', 'Volver al menú principal', "
+            "'Regresar al inicio', 'Hablar con un agente' or any other "
+            "menu-return option as a numbered text item in your response. "
+            "Those options live in the chatbot's main menu, NOT in your "
+            "AI replies. If the user needs them, they already know they "
+            "can type 'menu' or 'salir' — and the engine handles it. "
+            "Inventing a fake '1. Volver al menú principal' button is a "
+            "dead-end because the resulting tap goes back to you with no "
+            "context, not to the real menu."
+        )
         parts.append(
             "- When presenting options, ALWAYS format them as a numbered list "
             "using EXACTLY: '1. Option' (number, period, space, text). "

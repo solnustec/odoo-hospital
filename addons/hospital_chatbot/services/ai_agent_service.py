@@ -36,7 +36,15 @@ GEMINI_API_URL = (
 )
 
 _EXIT_PATTERNS = re.compile(
-    r"^(menu|menú|volver|voltar|back|regresar|salir|sair|exit|quit|inicio|home|main\s*menu)$",
+    # Bare keywords (whole-message exit requests).
+    r"^(?:menu|menú|volver|voltar|back|regresar|salir|sair|exit|quit"
+    r"|inicio|home|cancelar)$"
+    # OR multi-word phrases that mean "go back to main menu".
+    r"|^(?:volver|regresar|ir)\s+(?:al\s+)?(?:menú|menu|inicio)"
+    r"(?:\s+principal)?$"
+    r"|^(?:menú|menu)\s+principal$"
+    r"|^main\s*menu$"
+    r"|^volver\s+al\s+inicio$",
     re.IGNORECASE,
 )
 
