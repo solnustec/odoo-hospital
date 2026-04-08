@@ -49,6 +49,48 @@ _CODE_LEAK_RE = re.compile(
 
 _NUMBERED_LIST_RE = re.compile(r"^\s*(?:[*\-•]\s*)?(\d+)[.)]\s+(.+)$", re.MULTILINE)
 
+# Voice safety net — patterns the system prompt explicitly bans but the
+# model still occasionally produces. Stripped post-hoc from response_text
+# before it reaches the user. Each pattern is anchored at the start or
+# end of the string; middle-of-message occurrences are rare and left
+# alone to avoid mangling legitimate content.
+_BANNED_VOICE_PATTERNS = [
+    # Filler exclamations at the START of a turn.
+    re.compile(
+        r"^¡\s*(?:Perfecto|Excelente|Listo|Claro que sí|Por supuesto|"
+        r"Genial|Muy bien|Maravilloso|Magnífico|Estupendo|Fantástico)"
+        r"\s*!\s*[,.]*\s*",
+        re.IGNORECASE,
+    ),
+    # Formulaic question closers at the END.
+    re.compile(
+        r"\s*¿\s*Hay algo más en lo que pueda ayudar(?:te|le)(?:\s+hoy)?"
+        r"\s*\?\s*$",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\s*¿\s*En qué más puedo ayudar(?:te|le)\s*\?\s*$",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\s*¿\s*Te puedo ayudar en algo más\s*\?\s*$",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\s*¿\s*Necesitas algo más\s*\?\s*$",
+        re.IGNORECASE,
+    ),
+    # Formulaic statement closers at the END.
+    re.compile(
+        r"\s*Quedo a tus órdenes\.?\s*$",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\s*Estoy aquí para servirte\.?\s*$",
+        re.IGNORECASE,
+    ),
+]
+
 
 class AIAgentService:
     """AI Agent using the Gemini REST API with function calling."""
@@ -281,6 +323,22 @@ class AIAgentService:
             if not response_text:
                 response_text = get_ui_text("error_processing", lang)
                 response_is_fallback = True
+            else:
+                # Voice safety net — post-filter banned filler exclamations
+                # and formulaic closers that the system prompt has already
+                # explicitly forbidden but that Gemini occasionally still
+                # emits. Pattern-matching post-filter is more reliable than
+                # relying on prompt enforcement alone for high-frequency
+                # offenders. The cleaned text is what gets stored in
+                # history below, so future Gemini calls also see the
+                # cleaned pattern and reinforce it.
+                response_text = self._strip_banned_phrases(response_text)
+                if not response_text:
+                    # Defensive: if the entire response was a banned phrase,
+                    # fall through to the error fallback rather than ship
+                    # an empty message.
+                    response_text = get_ui_text("error_processing", lang)
+                    response_is_fallback = True
 
             _logger.info("AI response (%d chars): %s", len(response_text), response_text[:300])
 
@@ -569,6 +627,21 @@ class AIAgentService:
         except (KeyError, IndexError, TypeError):
             pass
         return "\n".join(texts) if texts else ""
+
+    @staticmethod
+    def _strip_banned_phrases(text: str) -> str:
+        """Strip banned filler exclamations and formulaic closers.
+
+        Patterns are defined module-level in _BANNED_VOICE_PATTERNS and
+        anchored at the start or end of the string. Returns the cleaned
+        text or an empty string if everything got stripped (caller is
+        responsible for handling the empty case).
+        """
+        if not text:
+            return text
+        for pattern in _BANNED_VOICE_PATTERNS:
+            text = pattern.sub("", text)
+        return text.strip()
 
     @staticmethod
     def _extract_usage(response_data: dict) -> tuple[int, int]:

@@ -296,25 +296,42 @@ class SystemPromptBuilder:
             "- NEVER book or cancel for a different person based on user's claim alone."
         )
 
-        # Confirmation flow for write operations
+        # Confirmation flow for write operations.
+        # IMPORTANT: this section was rewritten to fix a UX bug where
+        # the model was asking the user to confirm TWICE — once with its
+        # own natural summary, and once with the auto-generated
+        # action_summary returned by _create_pending_action. The
+        # action_summary is internal scaffolding for the model to
+        # sanity-check the args; it must never be shown to the user.
         parts.append("")
-        parts.append("ACTION CONFIRMATION:")
+        parts.append("ACTION CONFIRMATION (write operations):")
         parts.append(
             "- Write operations (create_appointment, cancel_appointment, "
-            "create_client, update_client) require user confirmation."
+            "create_client, update_client) execute as a TWO-CALL sequence: "
+            "first the write tool returns a pending_confirmation token + an "
+            "action_summary, then you call confirm_action(token) to actually "
+            "persist the change."
         )
         parts.append(
-            "- When you call these tools, you will receive a confirmation token "
-            "and an action summary instead of the final result."
+            "- The user-facing flow is ONE confirmation, not two. Get the "
+            "user's consent BEFORE calling the write tool, in your own "
+            "natural words (show a clean summary, ask '¿Confirmamos?'). "
+            "When the user says yes, execute BOTH calls back-to-back in the "
+            "same turn — call the write tool, receive the token, IMMEDIATELY "
+            "call confirm_action with that token, then send ONE final "
+            "success message."
         )
         parts.append(
-            "- Present the action summary to the user and ask them to confirm."
+            "- DO NOT speak to the user between the write tool call and the "
+            "confirm_action call. DO NOT show or relay the auto-generated "
+            "action_summary — it is internal scaffolding for you, not a "
+            "message for them. They already saw your natural summary "
+            "before the write call."
         )
         parts.append(
-            "- ONLY call 'confirm_action' with the token AFTER the user explicitly agrees."
-        )
-        parts.append(
-            "- NEVER auto-confirm. NEVER call confirm_action without user consent."
+            "- DO NOT call confirm_action without first calling the matching "
+            "write tool in the same turn. NEVER auto-call write tools "
+            "without the user having confirmed in your previous summary."
         )
 
         # Data privacy
@@ -448,21 +465,36 @@ class SystemPromptBuilder:
         )
         parts.append("  5) After they pick a period, show specific times.")
         parts.append(
-            "  6) Show the full booking summary (service, doctor, date, time, "
-            "patient name, cédula) and ask the user to confirm."
+            "  6) Show the user a clean booking summary in your OWN natural "
+            "words (service, doctor, date in natural language, time, "
+            "patient name and masked ID). Use the multi-line plain-text "
+            "format from the WRITING STYLE section. End with '¿Confirmamos?' "
+            "or similar. This is the ONLY confirmation the user sees — "
+            "do NOT ask them to confirm twice."
         )
         parts.append(
-            "  7) When the user agrees with the summary, you MUST call "
-            "the 'create_appointment' tool with all the collected data "
-            "(service_id, doctor_id, full_name, identification, date, time). "
-            "This call returns a pending_confirmation token (NOT a real "
-            "booking yet) — DO NOT tell the user the booking is done yet."
+            "  7) When the user says yes, call 'create_appointment' with "
+            "all the data (service_id, doctor_id, full_name, identification, "
+            "date, time). The tool returns a pending_confirmation token + an "
+            "internal action_summary. Do NOT speak to the user yet. Do NOT "
+            "show the action_summary."
         )
         parts.append(
-            "  8) Show the action_summary you receive back to the user "
-            "and explicitly ask them one more time to confirm. ONLY when "
-            "they confirm again, call 'confirm_action' with the token. "
-            "The booking is real ONLY after confirm_action returns success."
+            "  8) IMMEDIATELY in the SAME turn (no user-facing message in "
+            "between), call 'confirm_action' with the token you just "
+            "received. The user already confirmed once in step 6 — do NOT "
+            "ask them again. The two-tool sequence is a single internal "
+            "write; the user only sees ONE confirmation flow."
+        )
+        parts.append(
+            "  9) After confirm_action returns success, send ONE final "
+            "short message in natural language. Example: 'Listo, tu cita "
+            "para Consulta Cardiológica con el Dr. Rodríguez quedó "
+            "agendada para mañana a las 10:00.' Do NOT open with "
+            "'¡Listo!' as a turn-opener (banned exclamation) — use "
+            "'Listo,' (no exclamation marks) or just go straight into "
+            "the news. Do NOT close with '¿Hay algo más en lo que pueda "
+            "ayudarte?' (banned formulaic closer)."
         )
         parts.append(
             "  CRITICAL: NEVER announce that an appointment is booked, "
