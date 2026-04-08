@@ -68,6 +68,25 @@ class ConversationContextManager:
         _ctx_write(session, ctx)
 
     @staticmethod
+    def truncate_history(session, length: int):
+        """Truncate ai_messages to exactly ``length`` entries.
+
+        Used by the agent on failure to roll back everything appended
+        during the failed turn (the user message, any function call /
+        function response pairs from the tool loop, etc.) so the next
+        turn starts from the same history state as before. Without
+        this, a failed turn leaves orphan entries in history that
+        either pollute Gemini's pattern matching (the "Lo siento, hubo
+        un error" feedback loop) or trip Gemini's strict
+        function-call/response pairing validator on the next call.
+        """
+        ctx = dict(session.context or {})
+        messages = ctx.get("ai_messages") or []
+        if len(messages) > length:
+            ctx["ai_messages"] = messages[:length]
+            _ctx_write(session, ctx)
+
+    @staticmethod
     def append_function_calls_batch(session, calls: list[tuple[str, dict, dict]]):
         """Record parallel function calls as a single model+function exchange.
 

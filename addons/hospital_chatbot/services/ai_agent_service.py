@@ -167,6 +167,14 @@ class AIAgentService:
                 user_message = resolved
             ConversationContextManager.clear_last_options(session)
 
+        # Snapshot the history length BEFORE appending anything for this
+        # turn. On failure we truncate back to this length, so a failed
+        # turn leaves zero footprint in ai_messages — no orphan user
+        # message, no orphan function_call/function_response pair, and
+        # no fallback "Lo siento" model turn that would later poison
+        # Gemini's pattern matching on subsequent calls.
+        history_len_before_turn = len(ConversationContextManager.get_history(session))
+
         ConversationContextManager.append_user_message(session, user_message)
 
         system_prompt = self._build_system_prompt(session, lang_override=lang)
@@ -178,6 +186,11 @@ class AIAgentService:
         total_input = 0
         total_output = 0
         api_call_count = 0
+        # Tracks whether response_text is a real model output (safe to keep
+        # in history) or the fallback "Lo siento, hubo un error" string
+        # (must NOT be persisted, otherwise Gemini learns the pattern from
+        # its own history and starts generating it on every subsequent turn).
+        response_is_fallback = False
 
         try:
             contents = self._build_contents(history)
@@ -267,18 +280,28 @@ class AIAgentService:
 
             if not response_text:
                 response_text = get_ui_text("error_processing", lang)
+                response_is_fallback = True
 
             _logger.info("AI response (%d chars): %s", len(response_text), response_text[:300])
 
         except Exception as e:
             _logger.error("Gemini error: %s", e, exc_info=True)
             response_text = get_ui_text("error_processing", lang)
+            response_is_fallback = True
 
         if api_call_count > 0:
             self._save_token_usage(session, total_input, total_output, api_call_count)
 
-        ConversationContextManager.append_model_message(session, response_text)
-        ConversationContextManager.trim_history(session, self.chatbot.ai_max_history_messages)
+        if response_is_fallback:
+            # Roll back EVERYTHING this turn appended (user message,
+            # any function_call/function_response pairs from the tool
+            # loop, etc.) so the next turn sees the same history as
+            # before this failed attempt. The user can simply retype
+            # their input and retry on a clean context.
+            ConversationContextManager.truncate_history(session, history_len_before_turn)
+        else:
+            ConversationContextManager.append_model_message(session, response_text)
+            ConversationContextManager.trim_history(session, self.chatbot.ai_max_history_messages)
 
         return self._build_response_from_text(response_text, session, lang)
 
