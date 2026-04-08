@@ -418,14 +418,29 @@ class AIAgentService:
         if tools:
             body["tools"] = tools
 
+        # Send the API key as a header (X-goog-api-key) instead of a
+        # ?key= query param so it never lands in request URLs, server
+        # logs, or exception messages produced by raise_for_status().
         resp = http_requests.post(
             url,
-            headers={"Content-Type": "application/json"},
-            params={"key": self.api_key},
+            headers={
+                "Content-Type": "application/json",
+                "X-goog-api-key": self.api_key,
+            },
             json=body,
             timeout=30,
         )
-        resp.raise_for_status()
+        if not resp.ok:
+            # Log Google's error body — raise_for_status() only includes
+            # the URL/status, which makes 4xx debugging painful.
+            body_preview = (resp.text or "")[:1000]
+            _logger.error(
+                "Gemini API %s for %s: %s",
+                resp.status_code,
+                self.CHAT_MODEL,
+                body_preview,
+            )
+            resp.raise_for_status()
         return resp.json()
 
     def _call_gemini_simple(self, system_prompt: str, user_message: str) -> tuple[str, tuple[int, int] | None]:
