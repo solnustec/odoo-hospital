@@ -37,31 +37,6 @@ def build_buttons_response(
     return resp
 
 
-def build_list_response(
-    text: str,
-    button_label: str,
-    sections: list[dict],
-    typing_delay_ms: int = 0,
-) -> dict:
-    """WhatsApp list message (for more than 3 options).
-
-    Args:
-        text: Header/body text for the message.
-        button_label: Text shown on the list button (e.g. "Ver opciones").
-        sections: List of section dicts, each with "title" and "rows".
-                  Each row has "id", "title", and optionally "description".
-    """
-    resp = {
-        "type": "list",
-        "content": text,
-        "button_label": button_label,
-        "sections": sections,
-    }
-    if typing_delay_ms > 0:
-        resp["metadata"] = {"typing_delay_ms": typing_delay_ms}
-    return resp
-
-
 def estimate_typing_delay(text: str) -> int:
     """Estimate a natural typing delay in ms based on text length.
 

@@ -9,6 +9,13 @@ import time
 import requests
 from odoo import fields
 
+from .button_pagination import (
+    build_paginated_buttons,
+    clear_pending_pages,
+    consume_next_page,
+    is_show_more_input,
+)
+
 _logger = logging.getLogger(__name__)
 
 # Resume keywords that let the client return to the bot from human agent
@@ -91,6 +98,35 @@ class ChatbotEngine:
             else:
                 _logger.info("Session %s transferred to agent, skipping", session.id)
                 return []
+
+        # "Ver más" pagination intercept — emit the next batch of buttons
+        # without disturbing node state. Works for both AI mode and flows
+        # because pagination state lives in session.context.
+        if is_show_more_input(message):
+            from .ai_context import ConversationContextManager
+            from .ai_prompts import get_ui_text
+            lang = ConversationContextManager.get_language(session) or "es"
+            responses = consume_next_page(
+                session,
+                more_text=get_ui_text("more_options", lang),
+                show_more_label=get_ui_text("show_more", lang),
+            )
+            for resp in responses:
+                self._log_message(
+                    session,
+                    resp.get("content", ""),
+                    "OUTBOUND",
+                    resp.get("type", "text"),
+                )
+            session.touch()
+            return responses
+
+        # Any non-Ver-más interaction invalidates stale pagination state.
+        # If this turn renders a new paginated menu it will set fresh
+        # pending pages; otherwise the next "Ver más" tap on an old
+        # message correctly does nothing instead of replaying phantom
+        # options.
+        clear_pending_pages(session)
 
         # If AI is enabled, ALL messages go through the AI agent — flows are ignored
         if self.chatbot.ai_enabled:
@@ -313,6 +349,23 @@ class ChatbotEngine:
             next_node = conn.to_node_id if conn else None
         return responses, next_node, False
 
+    def _paginated_button_responses(self, session, header, options):
+        """Wrap build_paginated_buttons with the session language lookup.
+
+        ``options`` is a list of ``{"id", "label"}`` dicts. Returns the
+        list of response dicts ready to send.
+        """
+        from .ai_context import ConversationContextManager
+        from .ai_prompts import get_ui_text
+        lang = ConversationContextManager.get_language(session) or "es"
+        return build_paginated_buttons(
+            session=session,
+            all_options=options,
+            prompt=header,
+            more_text=get_ui_text("more_options", lang),
+            show_more_label=get_ui_text("show_more", lang),
+        )
+
     def _handle_menu(self, node, session, user_input):
         config = node.config or {}
         menu_options = node.menu_option_ids
@@ -324,40 +377,14 @@ class ChatbotEngine:
                 msg = header or "Menú sin opciones configuradas."
                 return [{"type": "text", "content": msg}], node.get_next_node(), False
 
-            # Use interactive buttons for ≤3 options
-            if len(menu_options) <= 3:
-                buttons = []
-                for opt in menu_options:
-                    buttons.append({
-                        "id": str(opt.option_number),
-                        "label": opt.option_text[:20],
-                    })
-                return [{
-                    "type": "buttons",
-                    "content": header or "Seleccione:",
-                    "buttons": buttons,
-                }], node, True
-
-            # Use interactive list for 4-10 options
-            if len(menu_options) <= 10:
-                rows = []
-                for opt in menu_options:
-                    rows.append({
-                        "id": str(opt.option_number),
-                        "title": opt.option_text[:24],
-                    })
-                return [{
-                    "type": "list",
-                    "content": header or "Seleccione:",
-                    "button_label": "Ver opciones",
-                    "sections": [{"title": "Opciones", "rows": rows}],
-                }], node, True
-
-            # Plain text fallback for >10 options
-            menu_text = (header + "\n") if header else ""
-            for opt in menu_options:
-                menu_text += f"\n*{opt.option_number}.* {opt.option_text}"
-            return [{"type": "text", "content": menu_text.strip()}], node, True
+            buttons = [
+                {"id": str(opt.option_number), "label": opt.option_text[:20]}
+                for opt in menu_options
+            ]
+            responses = self._paginated_button_responses(
+                session, header or "Seleccione:", buttons
+            )
+            return responses, node, True
 
         # Process user selection
         user_input = user_input.strip()
@@ -699,21 +726,21 @@ class ChatbotEngine:
                 f"el *{date_display}*."
             )
 
-            # Build interactive list for slot selection
-            rows = []
-            for key, s_info in slot_map.items():
-                rows.append({"id": key, "title": s_info["display"]})
+            # Build button options for slot selection
+            slot_buttons = [
+                {"id": key, "label": s_info["display"][:20]}
+                for key, s_info in slot_map.items()
+            ]
 
             # Advance to select_slot node and wait for input there
             next_node = node.get_next_node()  # select_slot
             if next_node:
                 session.write({"current_node_id": next_node.id})
-            return [{
-                "type": "list",
-                "content": header,
-                "button_label": "Ver horarios",
-                "sections": [{"title": "Horarios disponibles", "rows": rows}],
-            }], next_node, True
+            return (
+                self._paginated_button_responses(session, header, slot_buttons),
+                next_node,
+                True,
+            )
 
         # Multiple doctors with availability — let user pick
         doc_choices = {}
@@ -728,20 +755,22 @@ class ChatbotEngine:
 
         session.set_variable("_doctor_choices", doc_choices)
 
-        # Build interactive list for doctor selection
-        rows = []
-        for key, info in doc_choices.items():
-            rows.append({"id": key, "title": info["name"][:24]})
+        # Build button options for doctor selection
+        doc_buttons = [
+            {"id": key, "label": info["name"][:20]}
+            for key, info in doc_choices.items()
+        ]
 
         next_node = node.get_next_node()
         if next_node:
             session.write({"current_node_id": next_node.id})
-        return [{
-            "type": "list",
-            "content": msg.split("\n\n")[0],  # header only
-            "button_label": "Ver médicos",
-            "sections": [{"title": "Médicos disponibles", "rows": rows}],
-        }], next_node, True
+        return (
+            self._paginated_button_responses(
+                session, msg.split("\n\n")[0], doc_buttons  # header only
+            ),
+            next_node,
+            True,
+        )
 
     def _format_slots(self, slots, tz, max_slots=12):
         """Format slots for display. Returns (slot_lines, slot_map)."""
@@ -818,18 +847,18 @@ class ChatbotEngine:
         day_name = weekday_names[parsed_date.weekday()]
         header = f"Horarios con *{doctor.name}* — {day_name} {parsed_date.strftime('%d/%m/%Y')}:"
 
-        # Build interactive list for slot selection
-        rows = []
-        for key, slot_info in slot_map.items():
-            rows.append({"id": key, "title": slot_info["display"]})
+        # Build button options for slot selection
+        slot_buttons = [
+            {"id": key, "label": slot_info["display"][:20]}
+            for key, slot_info in slot_map.items()
+        ]
 
         # Move to next node (select_slot) which will wait for user input
-        return [{
-            "type": "list",
-            "content": header,
-            "button_label": "Ver horarios",
-            "sections": [{"title": "Horarios disponibles", "rows": rows}],
-        }], node.get_next_node(), False
+        return (
+            self._paginated_button_responses(session, header, slot_buttons),
+            node.get_next_node(),
+            False,
+        )
 
     def _booking_select_slot(self, node, session, user_input, config):
         """Process user's selection from a numbered list (doctor or time slot)."""
@@ -870,13 +899,15 @@ class ChatbotEngine:
                     day_name = weekday_names[parsed_date.weekday()]
                     header = f"Horarios con *{doctor.name}* — {day_name} {parsed_date.strftime('%d/%m/%Y')}:"
 
-                    rows = [{"id": k, "title": v["display"]} for k, v in slot_map.items()]
-                    return [{
-                        "type": "list",
-                        "content": header,
-                        "button_label": "Ver horarios",
-                        "sections": [{"title": "Horarios disponibles", "rows": rows}],
-                    }], node, True
+                    slot_buttons = [
+                        {"id": k, "label": v["display"][:20]}
+                        for k, v in slot_map.items()
+                    ]
+                    return (
+                        self._paginated_button_responses(session, header, slot_buttons),
+                        node,
+                        True,
+                    )
 
             return [{"type": "text", "content": "No hay horarios disponibles. Escriba *menu* para reiniciar."}], None, False
 

@@ -41,6 +41,7 @@ class ConversationContextManager:
         ctx.pop("ai_messages", None)
         ctx.pop("patient_id", None)
         ctx.pop("last_options", None)
+        ctx.pop("_pending_button_pages", None)
         session.write({
             "context": ctx,
             "current_node_id": False,

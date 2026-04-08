@@ -25,20 +25,25 @@ class TestChatbotEngine(ChatbotTestCommon):
                         f"Expected welcome or menu, got: {texts}")
 
     def test_menu_shows_options(self):
-        """Menu node shows options (buttons, list, or text depending on count)."""
+        """Menu node shows options as paginated buttons (never as a list)."""
         engine = self._get_engine()
         responses = engine.process_message("593222222222", "hola")
         self.assertTrue(len(responses) >= 1)
-        r = responses[0]
-        if r.get("type") == "buttons":
-            labels = [b["label"] for b in r["buttons"]]
-            self.assertTrue(any("Información" in l for l in labels))
-        elif r.get("type") == "list":
-            rows = r["sections"][0]["rows"]
-            titles = [row["title"] for row in rows]
-            self.assertTrue(any("Información" in t for t in titles))
+        # The menu must NEVER be rendered as a single_select list — that
+        # type does not render reliably on iOS. Buttons (possibly across
+        # multiple messages, with a "Ver más" pagination button when
+        # there are >6 options) are the only allowed interactive form.
+        for r in responses:
+            self.assertNotEqual(r.get("type"), "list")
+        all_labels = []
+        for r in responses:
+            if r.get("type") == "buttons":
+                all_labels.extend(b["label"] for b in r["buttons"])
+        if all_labels:
+            self.assertTrue(any("Información" in l for l in all_labels))
         else:
-            self.assertIn("Información", r.get("content", ""))
+            texts = " ".join(r.get("content", "") for r in responses)
+            self.assertIn("Información", texts)
 
     def test_menu_option_selection(self):
         """Selecting a menu option navigates to the correct node."""
@@ -136,8 +141,10 @@ class TestChatbotEngine(ChatbotTestCommon):
         responses = engine.process_message("593999333333", "inicio")
         self.assertTrue(len(responses) >= 1)
         r = responses[0]
-        # Should hit main flow — either list or text with "Seleccione"
-        has_menu = r.get("type") in ("list", "buttons") or "Seleccione" in r.get("content", "")
+        # Should hit main flow — buttons or text with "Seleccione".
+        # The list type is no longer used (iOS rendering bug).
+        self.assertNotEqual(r.get("type"), "list")
+        has_menu = r.get("type") == "buttons" or "Seleccione" in r.get("content", "")
         self.assertTrue(has_menu, f"Expected menu, got: {r}")
 
     def test_inactive_chatbot_ignored(self):

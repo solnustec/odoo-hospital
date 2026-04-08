@@ -21,11 +21,11 @@ from .ai_prompts import (
 )
 from .ai_response import (
     build_buttons_response,
-    build_list_response,
     build_text_response,
     estimate_typing_delay,
 )
 from .ai_tools import ToolRegistry, build_rest_tools
+from .button_pagination import build_paginated_buttons
 
 _logger = logging.getLogger(__name__)
 
@@ -295,12 +295,14 @@ class AIAgentService:
 
             ConversationContextManager.set_last_options(session, options)
 
-            if len(options) <= 3:
-                responses.append(build_buttons_response(prompt, options, estimate_typing_delay(prompt)))
-            else:
-                rows = [{"id": opt["id"], "title": opt["label"]} for opt in options]
-                sections = [{"title": get_ui_text("view_options", lang), "rows": rows}]
-                responses.append(build_list_response(prompt, get_ui_text("view_options", lang), sections, estimate_typing_delay(prompt)))
+            responses.extend(build_paginated_buttons(
+                session=session,
+                all_options=options,
+                prompt=prompt,
+                more_text=get_ui_text("more_options", lang),
+                show_more_label=get_ui_text("show_more", lang),
+                first_typing_delay_ms=estimate_typing_delay(prompt),
+            ))
 
             for i, resp in enumerate(responses):
                 resp.setdefault("metadata", {})

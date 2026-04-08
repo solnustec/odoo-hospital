@@ -125,6 +125,8 @@ _UI_TRANSLATIONS = {
         "view_options": "Ver opciones",
         "select_option": "Seleccione una opción:",
         "options": "Opciones",
+        "more_options": "Más opciones:",
+        "show_more": "Ver más",
     },
     "en": {
         "book_appointment": "Book appointment",
@@ -136,6 +138,8 @@ _UI_TRANSLATIONS = {
         "view_options": "View options",
         "select_option": "Select an option:",
         "options": "Options",
+        "more_options": "More options:",
+        "show_more": "Show more",
     },
     "pt": {
         "book_appointment": "Agendar consulta",
@@ -147,6 +151,8 @@ _UI_TRANSLATIONS = {
         "view_options": "Ver opções",
         "select_option": "Selecione uma opção:",
         "options": "Opções",
+        "more_options": "Mais opções:",
+        "show_more": "Ver mais",
     },
 }
 
