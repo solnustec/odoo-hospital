@@ -53,7 +53,7 @@ _NUMBERED_LIST_RE = re.compile(r"^\s*(?:[*\-•]\s*)?(\d+)[.)]\s+(.+)$", re.MULT
 class AIAgentService:
     """AI Agent using Gemini 2.0 Flash REST API with function calling."""
 
-    CHAT_MODEL = "gemini-2.0-flash"
+    CHAT_MODEL = "gemini-2.5-flash"
 
     def __init__(self, chatbot, env):
         self.chatbot = chatbot
