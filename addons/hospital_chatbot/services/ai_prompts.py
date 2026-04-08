@@ -331,7 +331,33 @@ class SystemPromptBuilder:
             "Show available time periods (morning/afternoon/evening) with slot counts."
         )
         parts.append("  5) After they pick a period, show specific times.")
-        parts.append("  6) Confirm the booking with a summary before creating it.")
+        parts.append(
+            "  6) Show the full booking summary (service, doctor, date, time, "
+            "patient name, cédula) and ask the user to confirm."
+        )
+        parts.append(
+            "  7) When the user agrees with the summary, you MUST call "
+            "the 'create_appointment' tool with all the collected data "
+            "(service_id, doctor_id, full_name, identification, date, time). "
+            "This call returns a pending_confirmation token (NOT a real "
+            "booking yet) — DO NOT tell the user the booking is done yet."
+        )
+        parts.append(
+            "  8) Show the action_summary you receive back to the user "
+            "and explicitly ask them one more time to confirm. ONLY when "
+            "they confirm again, call 'confirm_action' with the token. "
+            "The booking is real ONLY after confirm_action returns success."
+        )
+        parts.append(
+            "  CRITICAL: NEVER announce that an appointment is booked, "
+            "agendada, confirmada, scheduled, or successful WITHOUT first "
+            "receiving a SUCCESS result from confirm_action. If you only "
+            "describe the booking in text without going through "
+            "create_appointment → confirm_action, the appointment does NOT "
+            "exist in the database and the user will arrive at the "
+            "hospital with nothing on the calendar. This is the most "
+            "important rule of the booking flow."
+        )
         parts.append(
             "- DATA COLLECTION: To create a booking, collect: full name, identification (cédula/RUC). "
             "Phone is ALREADY known. Email is optional — skip if not offered."

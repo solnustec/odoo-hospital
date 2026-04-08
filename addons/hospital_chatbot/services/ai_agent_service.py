@@ -442,6 +442,18 @@ class AIAgentService:
         body = {
             "system_instruction": {"parts": [{"text": system_prompt}]},
             "contents": contents,
+            # Disable internal "thinking" so the entire candidate token
+            # budget goes to actual output text. With thinking enabled,
+            # gemini-2.5-flash-lite occasionally burns the whole budget
+            # on internal reasoning and returns zero text parts after a
+            # tool response — which the agent then has to fall back on
+            # the error_processing string for. The chatbot use case is
+            # tool-call + short reply, not multi-step reasoning, so
+            # disabling thinking is a clear win on reliability and
+            # latency without measurable quality loss.
+            "generationConfig": {
+                "thinkingConfig": {"thinkingBudget": 0},
+            },
         }
         if tools:
             body["tools"] = tools
