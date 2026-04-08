@@ -51,17 +51,22 @@ _NUMBERED_LIST_RE = re.compile(r"^\s*(?:[*\-•]\s*)?(\d+)[.)]\s+(.+)$", re.MULT
 
 
 class AIAgentService:
-    """AI Agent using Gemini 2.0 Flash REST API with function calling."""
+    """AI Agent using the Gemini REST API with function calling."""
 
-    CHAT_MODEL = "gemini-2.5-flash"
+    # Default model — overridable per-deployment via the system parameter
+    # ``hospital_chatbot.gemini_model``. ``gemini-2.5-flash-lite`` has the
+    # most generous free-tier rate limits today; if you have billing
+    # enabled, switch to ``gemini-2.5-flash`` (or newer) for higher
+    # capability without code changes.
+    DEFAULT_CHAT_MODEL = "gemini-2.5-flash-lite"
 
     def __init__(self, chatbot, env):
         self.chatbot = chatbot
         self.env = env
-        self.api_key = (
-            env["ir.config_parameter"]
-            .sudo()
-            .get_param("hospital_chatbot.gemini_api_key", "")
+        config = env["ir.config_parameter"].sudo()
+        self.api_key = config.get_param("hospital_chatbot.gemini_api_key", "")
+        self.chat_model = config.get_param(
+            "hospital_chatbot.gemini_model", self.DEFAULT_CHAT_MODEL
         )
 
     def start_conversation(self, session, user_name: str = "") -> list[dict]:
@@ -410,7 +415,7 @@ class AIAgentService:
         )
 
     def _call_gemini_api(self, system_prompt: str, contents: list, tools: list = None) -> dict:
-        url = GEMINI_API_URL.format(model=self.CHAT_MODEL)
+        url = GEMINI_API_URL.format(model=self.chat_model)
         body = {
             "system_instruction": {"parts": [{"text": system_prompt}]},
             "contents": contents,
@@ -437,7 +442,7 @@ class AIAgentService:
             _logger.error(
                 "Gemini API %s for %s: %s",
                 resp.status_code,
-                self.CHAT_MODEL,
+                self.chat_model,
                 body_preview,
             )
             resp.raise_for_status()
@@ -453,27 +458,58 @@ class AIAgentService:
         return text, usage if usage != (0, 0) else None
 
     def _build_contents(self, messages: list) -> list:
-        contents = []
+        # First pass: convert each stored message to Gemini's wire format.
+        converted = []
         for msg in messages:
             role = msg.get("role", "user")
             parts = msg.get("parts", [])
 
             rest_parts = []
+            has_function_call = False
+            has_function_response = False
             for part in parts:
                 if "text" in part:
                     rest_parts.append({"text": part["text"]})
                 elif "function_call" in part:
                     fc = part["function_call"]
                     rest_parts.append({"functionCall": {"name": fc["name"], "args": fc.get("args", {})}})
+                    has_function_call = True
                 elif "function_response" in part:
                     fr = part["function_response"]
                     rest_parts.append({"functionResponse": {"name": fr["name"], "response": fr.get("response", {})}})
+                    has_function_response = True
 
-            if rest_parts:
-                api_role = "user" if role == "function" else role
-                contents.append({"role": api_role, "parts": rest_parts})
+            if not rest_parts:
+                continue
 
-        return contents
+            api_role = "user" if role == "function" else role
+            converted.append({
+                "role": api_role,
+                "parts": rest_parts,
+                "_has_call": has_function_call,
+                "_has_response": has_function_response,
+            })
+
+        # Second pass: drop function_response messages whose preceding
+        # message is not a model message with a matching function_call.
+        # The lite Gemini models reject any conversation where a
+        # functionResponse is not immediately preceded by a functionCall,
+        # which can happen after trim_history splits a call/response pair
+        # or if the model previously emitted text before the response.
+        sanitized = []
+        for i, msg in enumerate(converted):
+            if msg["_has_response"]:
+                prev = sanitized[-1] if sanitized else None
+                if not (prev and prev["role"] == "model" and prev["_has_call"]):
+                    _logger.debug(
+                        "Dropping orphaned function_response at history pos %d",
+                        i,
+                    )
+                    continue
+            sanitized.append(msg)
+
+        # Strip the bookkeeping flags before returning.
+        return [{"role": m["role"], "parts": m["parts"]} for m in sanitized]
 
     @staticmethod
     def _extract_function_calls(response_data: dict) -> list[dict]:

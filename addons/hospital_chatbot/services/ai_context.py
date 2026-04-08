@@ -100,9 +100,31 @@ class ConversationContextManager:
     def trim_history(session, max_messages: int = 20):
         ctx = dict(session.context or {})
         messages = ctx.get("ai_messages", [])
-        if len(messages) > max_messages:
-            ctx["ai_messages"] = messages[-max_messages:]
-            _ctx_write(session, ctx)
+        if len(messages) <= max_messages:
+            return
+
+        trimmed = messages[-max_messages:]
+
+        # Drop leading "function" messages (which carry function_response
+        # parts) until the head of the trimmed window is something Gemini
+        # accepts as a starting turn. A function_response without its
+        # preceding function_call is invalid and the lite Gemini models
+        # return 400 INVALID_ARGUMENT for it.
+        while trimmed and trimmed[0].get("role") == "function":
+            trimmed = trimmed[1:]
+        # If after dropping function responses the head is a "model"
+        # message that *only* contains function_calls (no text), drop it
+        # too — its responses were just removed and it has nothing
+        # standalone to contribute.
+        while trimmed and trimmed[0].get("role") == "model":
+            parts = trimmed[0].get("parts", [])
+            if parts and all("function_call" in p for p in parts):
+                trimmed = trimmed[1:]
+                continue
+            break
+
+        ctx["ai_messages"] = trimmed
+        _ctx_write(session, ctx)
 
     # --- Patient ID ---
 
