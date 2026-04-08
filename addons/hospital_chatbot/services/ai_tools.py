@@ -72,7 +72,15 @@ TOOL_DECLARATIONS = [
                 },
                 "date": {
                     "type": "STRING",
-                    "description": "Date in YYYY-MM-DD format",
+                    "description": (
+                        "Target calendar date as an ISO string 'YYYY-MM-DD'. "
+                        "This is the wire format for this tool only — the end user "
+                        "never sees or types this format. You MUST convert the user's "
+                        "natural-language date ('mañana', 'hoy', 'el jueves', "
+                        "'15 de abril') into 'YYYY-MM-DD' yourself before calling, "
+                        "using the current date provided in the system prompt as "
+                        "reference. Never ask the user to type a date in any format."
+                    ),
                 },
                 "period": {
                     "type": "STRING",
@@ -101,11 +109,24 @@ TOOL_DECLARATIONS = [
                 },
                 "date": {
                     "type": "STRING",
-                    "description": "Date in YYYY-MM-DD format",
+                    "description": (
+                        "Target calendar date as an ISO string 'YYYY-MM-DD'. "
+                        "This is the wire format for this tool only — the end user "
+                        "never sees or types this format. You MUST convert the user's "
+                        "natural-language date ('mañana', 'hoy', 'el jueves', "
+                        "'15 de abril') into 'YYYY-MM-DD' yourself before calling, "
+                        "using the current date provided in the system prompt as "
+                        "reference. Never ask the user to type a date in any format."
+                    ),
                 },
                 "time": {
                     "type": "STRING",
-                    "description": "Time in HH:MM format",
+                    "description": (
+                        "Start time as 'HH:MM' 24-hour wire format. Internal only; "
+                        "speak to the user in natural language ('a las 10 de la "
+                        "mañana', '3:30 pm'). Convert yourself — never ask the user "
+                        "to type HH:MM."
+                    ),
                 },
                 "service_id": {
                     "type": "INTEGER",
@@ -459,7 +480,19 @@ class ToolRegistry:
         try:
             target_date = datetime.strptime(date, "%Y-%m-%d").date()
         except ValueError:
-            return {"error": "Invalid date format. Use YYYY-MM-DD"}
+            # Internal-only error message — never show this to the user.
+            # If you (the model) get this, it means YOU passed a malformed
+            # date string. Fix it on your side: re-read the user's natural
+            # language input, recompute the ISO date using the current date
+            # in the system prompt, and call the tool again. Do NOT ask the
+            # user to type a date in any technical format.
+            return {
+                "error": (
+                    "internal_invalid_iso_date — model failed to convert "
+                    "user input to YYYY-MM-DD wire format. Recompute and "
+                    "retry. Do not relay this error to the user."
+                )
+            }
 
         svc = AvailabilityService(self.env)
         slots = svc.get_available_slots(target_date, doctor)
@@ -648,7 +681,11 @@ class ToolRegistry:
             local_start = pytz.utc.localize(ev.start).astimezone(tz)
             result.append({
                 "id": ev.id,
-                "date": local_start.strftime("%Y-%m-%d"),
+                "date_iso": local_start.strftime("%Y-%m-%d"),
+                "weekday": local_start.strftime("%A"),
+                "day": local_start.day,
+                "month": local_start.month,
+                "year": local_start.year,
                 "time": local_start.strftime("%H:%M"),
                 "doctor": ev.doctor_id.name if ev.doctor_id else "N/A",
                 "service": ev.service_id.name if ev.service_id else "N/A",
