@@ -89,6 +89,31 @@ _BANNED_VOICE_PATTERNS = [
         r"\s*Estoy aquí para servirte\.?\s*$",
         re.IGNORECASE,
     ),
+    # Date example-coaching ("Por ejemplo, mañana, el viernes o 8 de
+    # abril."). Tightly scoped to the date-coaching shape:
+    #   - The phrase must be a SECOND sentence (preceded by . / ? / !).
+    #     This ensures we strip a coaching tail like
+    #     "¿Qué día? Por ejemplo, mañana o el viernes."
+    #     but never the first/only sentence, which would be a
+    #     self-contained narration.
+    #   - "Por ejemplo" must be IMMEDIATELY followed by date keywords
+    #     (mañana, hoy, day-of-week, "de <month>") so legitimate uses
+    #     like "tenemos varios servicios, por ejemplo Cardiología" are
+    #     preserved.
+    #   - Anchored to the END of the message — the coaching tail always
+    #     appears as the trailing thought.
+    # Uses a lookbehind for the boundary punctuation so that punctuation
+    # is preserved on the kept sentence (we only strip from the space
+    # before "Por ejemplo" onward).
+    re.compile(
+        r"(?<=[.?!])\s+[Pp]or ejemplo[,:]?\s*[\"\u201c\u00ab]?"
+        r"(?:mañana|hoy|pasado mañana|el\s+(?:lunes|martes|miércoles|"
+        r"jueves|viernes|sábado|domingo)|este\s+(?:lunes|martes|"
+        r"miércoles|jueves|viernes|sábado|domingo)|próxim[oa]\s+\w+|"
+        r"\d{1,2}\s+de\s+\w+)"
+        r"[^.?!\n]*[.?!]?\s*$",
+        re.IGNORECASE,
+    ),
 ]
 
 
